@@ -189,5 +189,7 @@ namespace ApiUsers.Controllers
         }
 
         //get user by id and user name
+
+        //set statuc code in try catch process
     }
 }

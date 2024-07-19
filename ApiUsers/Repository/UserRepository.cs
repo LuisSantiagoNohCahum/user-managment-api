@@ -22,41 +22,78 @@ namespace ApiUsers.Repository
             return data.FindAll(x => x.IsActive == 1); //asEnumerable
         }
 
-        public async Task<IEnumerable<User>> GetAllByAsync<FilterUserDto>(FilterUserDto _filter)
+        public async Task<IEnumerable<User>> GetAllByAsync(FilterUserDto _filter)
         {
-            throw new NotImplementedException();
+            FilterUserDto filterTmp = new FilterUserDto();
+
+            var users = _context.Users.AsQueryable();
+
+            if (_filter.UserName != filterTmp.UserName && !string.IsNullOrEmpty(_filter.UserName)) users = users.Where(x => x.UserName == _filter.UserName);
+
+            if (_filter.Type != filterTmp.Type) users = users.Where(x => x.RolType == _filter.Type);
+            
+            if (_filter.CreatedOn != filterTmp.CreatedOn)  users = users.Where(x => x.CreatedOn.Date.Equals(_filter.CreatedOn.Date));
+
+            var data = await users.ToListAsync();
+
+            return data;
         }
 
         public async Task<User> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+            return user;
         }
         public async Task<User> GetByUsername(string _username)
         {
-            throw new NotImplementedException();
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == _username);
+            return user;
         }
 
         public async Task<int> InsertAsync(User entity)
         {
-            throw new NotImplementedException();
+            _context.Users.Add(entity);
+            await _context.SaveChangesAsync();
+            return 1;
         }
 
         public async Task<int> UpdateAsync(User entity)
         {
-            throw new NotImplementedException();
+            _context.Entry(entity).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return 1;
+        }
+
+        public async Task<bool> Save(User entity)
+        {
+            int result = 0;
+
+            if (entity.Id > 0)
+            {
+                result = await UpdateAsync(entity);
+            }
+            else 
+            {
+                result = await InsertAsync(entity);
+            }
+
+            return (result > 0) ? true : false;
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            var _user = await _context.Users.FindAsync(id);
+
+            if (_user == null)
+            {
+                return false;
+            }
+            _context.Users.Remove(_user);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
-        public class FilterResult
-        { 
-            public bool HaveError { get; set; }
-            public bool ExistRequiredFilter { get; set; }
-            public string ErrorMessage { get; set; } = string.Empty;
-            public List<User>? DataFilterd { get; set; }
-        }
+        
     }
 }
