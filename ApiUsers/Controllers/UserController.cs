@@ -1,9 +1,10 @@
 ﻿using ApiUsers.Classes;
 using ApiUsers.DataBaseContext;
-using ApiUsers.Models.DTORequest;
-using ApiUsers.Models.DTOResponses;
+using ApiUsers.Models.Dto.Request;
+using ApiUsers.Models.Dto.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApiUsers.Controllers
 {
@@ -20,7 +21,7 @@ namespace ApiUsers.Controllers
 
         [HttpPost]
         [Route("Register")]
-        public IActionResult Registration(RequestUser_DTO _userDto)
+        public async Task<IActionResult> Registration(RequestUserDto _userDto)
         {
             if (!ModelState.IsValid)
             {
@@ -42,7 +43,7 @@ namespace ApiUsers.Controllers
                 };
 
                 //TODO. ASYNCRONUS PROCESS
-                var _userTemp = _dbContext.Users.FirstOrDefault(x => x.UserName == _userDto.UserName);
+                var _userTemp = await _dbContext.Users.FirstOrDefaultAsync(x => x.UserName == _userDto.UserName);
 
                 if (_userTemp == null)
                 {
@@ -61,16 +62,16 @@ namespace ApiUsers.Controllers
                 displayMessage = ErrorMessage;
             }
 
-            ResponseDTO response = new ResponseDTO() { IsSucces = success, DisplayMessage = displayMessage, Result = "" };
+            ResponseDto response = new ResponseDto() { IsSucces = success, DisplayMessage = displayMessage, Result = "" };
 
             return success ? Ok(response) : BadRequest(response);
         }
 
         [HttpPost]
         [Route("Login")]
-        public IActionResult Login(LoginUser_DTO _loginDTO)
+        public async Task<IActionResult> Login(LoginUserDto _loginDTO)
         {
-            var user = _dbContext.Users.FirstOrDefault(x => x.UserName == _loginDTO.UserName);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.UserName == _loginDTO.UserName);
 
             bool success = true;
             string jwtToken = string.Empty;
@@ -98,13 +99,13 @@ namespace ApiUsers.Controllers
 
         [HttpGet]
         [Route("GetUser")]
-        public IActionResult GetUser(int id) 
+        public async Task<IActionResult> GetUser(int id) 
         {
             if (id <= 0)
             {
                 return NoContent();
             }
-            var user = _dbContext.Users.FirstOrDefault(x => x.Id == id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
 
             //return response
             if (user != null)
@@ -117,7 +118,7 @@ namespace ApiUsers.Controllers
             }
         }
 
-        private static string ValidateUser(RequestUser_DTO _userDTO)
+        private static string ValidateUser(RequestUserDto _userDTO)
         {
             string MsgValidation = string.Empty;
             if (string.IsNullOrEmpty(_userDTO.FullName) || _userDTO.FullName == "string") MsgValidation = "Por favor, ingrese su Nombre Completo.";

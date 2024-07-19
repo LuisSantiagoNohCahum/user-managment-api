@@ -1,5 +1,6 @@
 ﻿using ApiUsers.DataBaseContext;
-using ApiUsers.Models.DTORequest;
+using ApiUsers.Models.Dto.Request;
+using ApiUsers.Models.Dto.Request;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,7 @@ namespace ApiUsers.Controllers
 
         [HttpPost]
         [Route("Role")]
-        public async Task<IActionResult> Create(RolType_DTO _role)
+        public async Task<IActionResult> Create(RolTypeDto _role)
         { 
             if (!ModelState.IsValid) 
             {

@@ -1,6 +1,6 @@
-﻿namespace ApiUsers.Models.DTORequest
+﻿namespace ApiUsers.Models.Dto.Request
 {
-    public class LoginUser_DTO
+    public class LoginUserDto
     {
         public string UserName { get; set; }
 
