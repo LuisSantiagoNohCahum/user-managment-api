@@ -6,6 +6,7 @@ using ApiUsers.Models.Dto.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ApiUsers.Controllers
 {
@@ -128,28 +129,46 @@ namespace ApiUsers.Controllers
                 return BadRequest(ModelState);
             }
 
+            bool haveError = false;
+            bool existRequiredFilter = false;
+            string messageError = string.Empty;
+
             FilterUserDto filterTmp = new FilterUserDto();
             var users = _dbContext.Users.AsQueryable();
 
             if (_filter.UserName != filterTmp.UserName && !string.IsNullOrEmpty(_filter.UserName))
             {
-                if (!CustomValidator.ValidateEmail(_filter.UserName)) return BadRequest("Ingrese un correo valido.");
-                users = users.Where(x => x.UserName == _filter.UserName);
-            }//else para messageerror para filtros obligatorios
-
-            if (_filter.Type != filterTmp.Type)
-            {
-                users = users.Where(x => x.RolType == _filter.Type);
+                if (!CustomValidator.ValidateEmail(_filter.UserName))
+                {
+                    messageError = "Ingrese un correo valido.";
+                    haveError = true;
+                }
+                else 
+                { 
+                    users = users.Where(x => x.UserName == _filter.UserName);
+                    existRequiredFilter = true;
+                }
             }
 
-            if (_filter.CreatedOn != filterTmp.CreatedOn)
+            if (_filter.Type != filterTmp.Type && !haveError)
+            {
+                users = users.Where(x => x.RolType == _filter.Type);
+                existRequiredFilter = true;
+            }
+            if (_filter.CreatedOn != filterTmp.CreatedOn && !haveError)
             {
                 users = users.Where(x => x.CreatedOn.Date.Equals(_filter.CreatedOn.Date));
+                existRequiredFilter = true;
             }
 
             var data = await users.ToListAsync();
 
-            return Ok(data);
+            return !haveError && existRequiredFilter ? 
+                Ok(data) : 
+                BadRequest(new ResponseDto() { 
+                    IsSucces = false, 
+                    DisplayMessage = (string.IsNullOrEmpty(messageError) ? "Debe ingresar al menos un valor en algun filtro." : messageError)
+                });
 
         }
         private static string ValidateUser(RequestUserDto _userDTO)
