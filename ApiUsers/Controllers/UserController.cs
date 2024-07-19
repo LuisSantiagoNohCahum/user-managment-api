@@ -1,5 +1,6 @@
 ﻿using ApiUsers.Classes;
 using ApiUsers.DataBaseContext;
+using ApiUsers.Models;
 using ApiUsers.Models.Dto.Request;
 using ApiUsers.Models.Dto.Responses;
 using Microsoft.AspNetCore.Http;
@@ -48,7 +49,7 @@ namespace ApiUsers.Controllers
                 if (_userTemp == null)
                 {
                     _dbContext.Users.Add(user);
-                    _dbContext.SaveChanges();
+                    await _dbContext.SaveChangesAsync();
                     displayMessage = "Usuario registrado correctamente.";
                 }
                 else
@@ -99,7 +100,7 @@ namespace ApiUsers.Controllers
 
         [HttpGet]
         [Route("GetUser")]
-        public async Task<IActionResult> GetUser(int id) 
+        public async Task<IActionResult> GetUser(int id)
         {
             if (id <= 0)
             {
@@ -118,6 +119,39 @@ namespace ApiUsers.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("GetUsersBy")]
+        public async Task<IActionResult> GetUsersBy(FilterUserDto _filter)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            FilterUserDto filterTmp = new FilterUserDto();
+            var users = _dbContext.Users.AsQueryable();
+
+            if (_filter.UserName != filterTmp.UserName && !string.IsNullOrEmpty(_filter.UserName))
+            {
+                if (!CustomValidator.ValidateEmail(_filter.UserName)) return BadRequest("Ingrese un correo valido.");
+                users = users.Where(x => x.UserName == _filter.UserName);
+            }//else para messageerror para filtros obligatorios
+
+            if (_filter.Type != filterTmp.Type)
+            {
+                users = users.Where(x => x.RolType == _filter.Type);
+            }
+
+            if (_filter.CreatedOn != filterTmp.CreatedOn)
+            {
+                users = users.Where(x => x.CreatedOn.Date.Equals(_filter.CreatedOn.Date));
+            }
+
+            var data = await users.ToListAsync();
+
+            return Ok(data);
+
+        }
         private static string ValidateUser(RequestUserDto _userDTO)
         {
             string MsgValidation = string.Empty;
