@@ -237,6 +237,7 @@ namespace ApiUsers.Controllers
             }
             catch (Exception ex)
             {
+                //response false ex.message ex.stacktrace
                 return StatusCode((int) HttpStatusCode.InternalServerError, $"Ocurrio un error al intentar actualizar: {ex.Message}");
             }
             
