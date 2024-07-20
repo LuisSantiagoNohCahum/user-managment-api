@@ -76,6 +76,11 @@ namespace ApiUsers.Controllers
         [Route("Login")]
         public async Task<IActionResult> Login(LoginUserDto _loginDTO)
         {
+            if (!CustomValidator.ValidateEmail(_loginDTO.UserName))
+            {
+                return BadRequest("Ingrese un correo valido.");
+            }
+
             var user = await _repository.GetByUserName(_loginDTO.UserName);
 
             bool success = true;
@@ -87,8 +92,19 @@ namespace ApiUsers.Controllers
                 if (PasswordHasher.VerifyPassword(_loginDTO.Password, user.Password))
                 {
                     displayMessage = "Ha iniciado sesión correctamente.";
+                    var response = new ResponseDto()
+                    {
+                        IsSucces = true,
+                        DisplayMessage = displayMessage,
+                        Result = user
+                    };
+                    return Ok(response);
                 }
-                return Ok(user);
+                else
+                {
+                    return BadRequest("Usuario o contraseña incorrecta");
+                }
+                
             }
             //return response
             return NoContent();
@@ -221,7 +237,7 @@ namespace ApiUsers.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int) HttpStatusCode.InternalServerError, "Ocurrio un error al intentar actualizar");
+                return StatusCode((int) HttpStatusCode.InternalServerError, $"Ocurrio un error al intentar actualizar: {ex.Message}");
             }
             
         }
