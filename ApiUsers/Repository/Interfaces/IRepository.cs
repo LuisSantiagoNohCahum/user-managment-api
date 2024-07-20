@@ -7,7 +7,7 @@ namespace ApiUsers.Repository.Interfaces
         public Task<IEnumerable<T>> GetAllAsync();
         public Task<T> GetByIdAsync(int id);
 
-        public Task<bool> Save(T entity);
+        public Task<bool> SaveAsync(T entity);
         public Task<int> InsertAsync(T entity);
 
         public Task<int> UpdateAsync(T entity);

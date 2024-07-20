@@ -44,9 +44,9 @@ namespace ApiUsers.Repository
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
             return user;
         }
-        public async Task<User> GetByUsername(string _username)
+        public async Task<User> GetByUserName(string _username)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == _username);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == _username && x.IsActive == 1);
             return user;
         }
 
@@ -64,7 +64,7 @@ namespace ApiUsers.Repository
             return 1;
         }
 
-        public async Task<bool> Save(User entity)
+        public async Task<bool> SaveAsync(User entity)
         {
             int result = 0;
 
@@ -82,7 +82,7 @@ namespace ApiUsers.Repository
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var _user = await _context.Users.FindAsync(id);
+            var _user = await GetByIdAsync(id);
 
             if (_user == null)
             {

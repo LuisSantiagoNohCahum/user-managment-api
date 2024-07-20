@@ -3,10 +3,12 @@ using ApiUsers.DataBaseContext;
 using ApiUsers.Models;
 using ApiUsers.Models.Dto.Request;
 using ApiUsers.Models.Dto.Responses;
+using ApiUsers.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Net;
 
 namespace ApiUsers.Controllers
 {
@@ -15,10 +17,12 @@ namespace ApiUsers.Controllers
     public class UserController : ControllerBase
     {
         //Dependency Injection
-        private readonly GeneralRepositoryContext _dbContext;
+        //private readonly GeneralRepositoryContext _dbContext;
+        private readonly UserRepository _repository;
         public UserController(GeneralRepositoryContext dbContext)
         {
-            this._dbContext = dbContext;
+            //this._dbContext = dbContext;
+            this._repository = new UserRepository(dbContext);
         }
 
         [HttpPost]
@@ -45,12 +49,11 @@ namespace ApiUsers.Controllers
                 };
 
                 //TODO. ASYNCRONUS PROCESS
-                var _userTemp = await _dbContext.Users.FirstOrDefaultAsync(x => x.UserName == _userDto.UserName);
+                var _userTemp = await _repository.GetByUserName(_userDto.UserName);
 
                 if (_userTemp == null)
                 {
-                    _dbContext.Users.Add(user);
-                    await _dbContext.SaveChangesAsync();
+                    success = await _repository.SaveAsync(user);
                     displayMessage = "Usuario registrado correctamente.";
                 }
                 else
@@ -73,7 +76,7 @@ namespace ApiUsers.Controllers
         [Route("Login")]
         public async Task<IActionResult> Login(LoginUserDto _loginDTO)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.UserName == _loginDTO.UserName);
+            var user = await _repository.GetByUserName(_loginDTO.UserName);
 
             bool success = true;
             string jwtToken = string.Empty;
@@ -93,21 +96,20 @@ namespace ApiUsers.Controllers
 
         [HttpGet]
         [Route("GetUsers")]
-        public IActionResult GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
             //return response
-            return Ok(_dbContext.Users.ToList().FindAll(x => x.IsActive == 1));
+            return Ok(await _repository.GetAllAsync());
         }
 
-        [HttpGet]
-        [Route("GetUser")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(int id)
         {
             if (id <= 0)
             {
                 return NoContent();
             }
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+            var user = await _repository.GetByIdAsync(id);
 
             //return response
             if (user != null)
@@ -149,27 +151,9 @@ namespace ApiUsers.Controllers
             }
             bool success = existRequiredFilter && string.IsNullOrEmpty(messageError);
 
-            var users = _dbContext.Users.AsQueryable();
+            IEnumerable<Models.User> data = new List<User>();
 
-            if (success)
-            {
-
-                if (_filter.UserName != filterTmp.UserName && !string.IsNullOrEmpty(_filter.UserName))
-                {
-                    users = users.Where(x => x.UserName == _filter.UserName);
-                }
-
-                if (_filter.Type != filterTmp.Type)
-                {
-                    users = users.Where(x => x.RolType == _filter.Type);
-                }
-                if (_filter.CreatedOn != filterTmp.CreatedOn)
-                {
-                    users = users.Where(x => x.CreatedOn.Date.Equals(_filter.CreatedOn.Date));
-                }
-            }
-            
-            var data = await users.ToListAsync();
+            if (success) data = await _repository.GetAllByAsync(_filter);
 
             return success ? 
                 Ok(data) : 
@@ -177,7 +161,69 @@ namespace ApiUsers.Controllers
                     IsSucces = false, 
                     DisplayMessage = messageError
                 });
+        }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            if (id > 0)
+            {
+                bool success = await _repository.DeleteAsync(id);
+
+                return success ? 
+                    Ok(new ResponseDto() { IsSucces = true , DisplayMessage = $"Usuario {id} eliminado correctamente"}) : 
+                    NotFound();
+            }
+            else
+            {
+                return BadRequest("El id debe ser mayor a 0");
+            }
+
+            //return NoContent();
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, RequestUserDto entity)
+        {
+            try
+            {
+                bool success = false;
+                string displayMessage = string.Empty;
+                string ErrorMessage = ValidateUser(entity);
+
+                var userToUpdate = await _repository.GetByIdAsync(id);
+                if (string.IsNullOrEmpty(ErrorMessage))
+                {
+                    if (userToUpdate != null)
+                    {
+                        //No actualizar con correos duplicados
+                        userToUpdate.UserName = entity.UserName;
+                        userToUpdate.FullName = entity.FullName;
+                        userToUpdate.RolType = entity.RolType;
+                        userToUpdate.Password = PasswordHasher.HashPassword(entity.Password);
+                        userToUpdate.UpdatedOn = DateTime.Now;
+                        success = await _repository.SaveAsync(userToUpdate);
+                        displayMessage = $"Usuario {userToUpdate.Id} actualizado correctamente.";
+                    }
+                    else
+                    {
+                        displayMessage = "No se encontro el usuario que desea actualizar";
+                    }
+                }
+                else
+                {
+                    displayMessage = ErrorMessage;
+                }
+
+                var response = new ResponseDto() { IsSucces = success, DisplayMessage = displayMessage };
+
+                return success ? Ok(response) : BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int) HttpStatusCode.InternalServerError, "Ocurrio un error al intentar actualizar");
+            }
+            
         }
         private static string ValidateUser(RequestUserDto _userDTO)
         {

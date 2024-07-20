@@ -9,7 +9,7 @@
         public string Password { get; set; }
 
         //verificar que exista el rol antes de insertar
-        //public int RolType { get; set; } = 0;
+        public int RolType { get; set; }
 
     }
 }
