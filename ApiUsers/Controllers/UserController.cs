@@ -222,7 +222,7 @@ namespace ApiUsers.Controllers
             {
                 string messageError = string.Empty;
                 //validate every object email and password
-                List<User> users= await ExcelHelper.SerializeToObject<User>( _file );
+                List<User> users= (await ExcelHelper.SerializeToObject<User>( _file )).ToList();
 
                 int cellIndex = 2;
                 foreach (User _user in users)
@@ -242,6 +242,7 @@ namespace ApiUsers.Controllers
                         User _userInDb = await _repository.GetByUserName(_userDto.UserName);
 
                         users[cellIndex - 2].Password = PasswordHasher.HashPassword(_userDto.Password);
+                        users[cellIndex - 2].CreatedOn = DateTime.Now;
 
                         if (_userInDb != null) 
                             messageError = $"Error en la fila {cellIndex}: Ya existe un usuario registrado con el correo {_userDto.UserName}.";
