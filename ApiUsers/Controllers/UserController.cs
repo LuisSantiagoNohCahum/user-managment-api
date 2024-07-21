@@ -22,11 +22,9 @@ namespace ApiUsers.Controllers
     {
 
         private readonly UserRepository _repository;
-        private readonly IConfiguration _configuration;
-        public UserController(GeneralRepositoryContext dbContext, IConfiguration configuration)
+        public UserController(GeneralRepositoryContext dbContext)
         {
             this._repository = new UserRepository(dbContext);
-            this._configuration = configuration;
         }
 
         [HttpPost]
@@ -76,45 +74,6 @@ namespace ApiUsers.Controllers
             return success ? Ok(response) : BadRequest(response);
         }
 
-        [HttpPost]
-        [Route("Login")]
-        public async Task<IActionResult> Login(LoginUserDto _loginDTO)
-        {
-            if (!CustomValidator.ValidateEmail(_loginDTO.UserName))
-            {
-                return BadRequest("Ingrese un correo valido.");
-            }
-
-            var user = await _repository.GetByUserName(_loginDTO.UserName);
-
-            bool success = true;
-            string tokenValue = string.Empty;
-            string displayMessage = string.Empty;
-
-            if (user != null)
-            {
-                if (PasswordHasher.VerifyPassword(_loginDTO.Password, user.Password))
-                {
-                    tokenValue = JwtToken.GenerateToken(user, _configuration);
-
-                    displayMessage = "Ha iniciado sesión correctamente.";
-                    var response = new ResponseDto()
-                    {
-                        IsSucces = true,
-                        DisplayMessage = displayMessage,
-                        Result = new { Token = tokenValue, User = user}
-                    };
-                    return Ok(response);
-                }
-                else
-                {
-                    return BadRequest("Usuario o contraseña incorrecta");
-                }
-                
-            }
-            //return response
-            return NoContent();
-        }
 
         [Authorize]
         [HttpGet]
