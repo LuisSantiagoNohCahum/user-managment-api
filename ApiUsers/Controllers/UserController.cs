@@ -90,33 +90,15 @@ namespace ApiUsers.Controllers
             var user = await _repository.GetByUserName(_loginDTO.UserName);
 
             bool success = true;
-            string jwtToken = string.Empty;
+            string tokenValue = string.Empty;
             string displayMessage = string.Empty;
 
             if (user != null)
             {
-                var claims = new[]
-                {
-                    new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
-                    new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                    new Claim("UserId",user.Id.ToString()),
-                    new Claim("UserName",user.UserName.ToString()),
-                };
-
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-                var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                var token = new JwtSecurityToken(
-                    _configuration["Jwt:Issuer"],
-                    _configuration["Jwt:Audience"],
-                    claims,
-                    expires: DateTime.UtcNow.AddMinutes(60),
-                    signingCredentials: signIn
-                    );
-                string tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
-
-
                 if (PasswordHasher.VerifyPassword(_loginDTO.Password, user.Password))
                 {
+                    tokenValue = JwtToken.GenerateToken(user, _configuration);
+
                     displayMessage = "Ha iniciado sesión correctamente.";
                     var response = new ResponseDto()
                     {
