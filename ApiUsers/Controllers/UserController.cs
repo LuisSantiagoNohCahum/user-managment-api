@@ -213,13 +213,66 @@ namespace ApiUsers.Controllers
             
         }
 
-        [Authorize]
+        
         [HttpPost]
         [Route("BulkByExcelLayout")]
         public async Task<IActionResult> BulkByExcelLayout(IFormFile _file)
         {
-            //add repo or class to manage the files and the excel getter data
-            throw new NotImplementedException();
+            try
+            {
+                string messageError = string.Empty;
+                //validate every object email and password
+                List<User> users= await ExcelHelper.SerializeToObject<User>( _file );
+
+                int cellIndex = 2;
+                foreach (User _user in users)
+                {
+                    RequestUserDto _userDto = new RequestUserDto()
+                    { 
+                        UserName = _user.UserName,
+                        FullName = _user.FullName,
+                        Password = _user.Password,
+                        RolType = _user.RolType
+                    };
+
+                    messageError = ValidateUser(_userDto);
+
+                    if (string.IsNullOrEmpty(messageError))
+                    {
+                        User _userInDb = await _repository.GetByUserName(_userDto.UserName);
+
+                        users[cellIndex - 2].Password = PasswordHasher.HashPassword(_userDto.Password);
+
+                        if (_userInDb != null) 
+                            messageError = $"Error en la fila {cellIndex}: Ya existe un usuario registrado con el correo {_userDto.UserName}.";
+                    }
+                    else 
+                        messageError = $"Error en el formato de la fila {cellIndex}: {messageError}";
+                        
+                    if (!string.IsNullOrEmpty(messageError)) throw new Exception(messageError);
+
+                    cellIndex++;
+                }
+
+                bool success = await _repository.BulkInsertAsync(users);
+
+                var response = new ResponseDto()
+                {
+                    IsSuccess = success,
+                    DisplayMessage = $"Se importaron {cellIndex - 2} registros"
+                };
+
+                return Ok(response);
+                //response num insrted register
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResponseDto() { 
+                    IsSuccess = false,
+                    DisplayMessage = ex.Message,
+                    Errors = new List<string> { ex.StackTrace ?? "An error has ocurred" }
+                });
+            }
         }
 
         [Authorize]

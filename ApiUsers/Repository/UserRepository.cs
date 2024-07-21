@@ -2,6 +2,7 @@
 using ApiUsers.Models;
 using ApiUsers.Models.Dto.Request;
 using ApiUsers.Repository.Interfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiUsers.Repository
@@ -89,6 +90,15 @@ namespace ApiUsers.Repository
                 return false;
             }
             _context.Users.Remove(_user);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> BulkInsertAsync(IEnumerable<User> data)
+        {
+            await _context.Users.AddRangeAsync(data);
+
             await _context.SaveChangesAsync();
 
             return true;

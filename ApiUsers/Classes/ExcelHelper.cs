@@ -7,9 +7,13 @@ namespace ApiUsers.Classes
 {
     public class ExcelHelper
     {
-        public static IEnumerable<T> SerializeToObject<T>(IFormFile _excelfile)
+        public static bool IsValidFile()
         {
-            DataTable dataTable = GetDataTableFromExcel(_excelfile) ?? new DataTable();
+            return true;
+        }
+        public static async Task<IEnumerable<T>> SerializeToObject<T>(IFormFile _excelfile)
+        {
+            DataTable dataTable = await GetDataTableFromExcel(_excelfile) ?? new DataTable();
 
             //VERIFY NOT NULL
             IEnumerable<T> list = JArray.FromObject(dataTable).ToObject<List<T>>() ?? new List<T>();
@@ -17,9 +21,9 @@ namespace ApiUsers.Classes
             return list;
         }
 
-        public static DataTable? GetDataTableFromExcel(IFormFile _excelfile)
+        public static async Task<DataTable?> GetDataTableFromExcel(IFormFile _excelfile)
         {
-            string tempFile = FileHelper.SaveTempFile(_excelfile);
+            string tempFile = await FileHelper.SaveTempFile(_excelfile);
 
             DataSet ds = GetDataSetFromExcel(tempFile);
 
@@ -71,8 +75,8 @@ namespace ApiUsers.Classes
                         ds.Tables.Add(dt);
                     }
                 }
-                
-                return new DataSet();
+
+                return ds;
             }
             catch (Exception ex)
             {
