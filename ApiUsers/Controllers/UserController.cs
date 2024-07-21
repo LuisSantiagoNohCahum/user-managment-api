@@ -69,7 +69,7 @@ namespace ApiUsers.Controllers
                 displayMessage = ErrorMessage;
             }
 
-            ResponseDto response = new ResponseDto() { IsSucces = success, DisplayMessage = displayMessage, Result = "" };
+            ResponseDto response = new ResponseDto() { IsSuccess = success, DisplayMessage = displayMessage, Result = "" };
 
             return success ? Ok(response) : BadRequest(response);
         }
@@ -142,7 +142,7 @@ namespace ApiUsers.Controllers
             return success ? 
                 Ok(data) : 
                 BadRequest(new ResponseDto() { 
-                    IsSucces = false, 
+                    IsSuccess = false, 
                     DisplayMessage = messageError
                 });
         }
@@ -156,7 +156,7 @@ namespace ApiUsers.Controllers
                 bool success = await _repository.DeleteAsync(id);
 
                 return success ? 
-                    Ok(new ResponseDto() { IsSucces = true , DisplayMessage = $"Usuario {id} eliminado correctamente"}) : 
+                    Ok(new ResponseDto() { IsSuccess = true , DisplayMessage = $"Usuario {id} eliminado correctamente"}) : 
                     NotFound();
             }
             else
@@ -201,7 +201,7 @@ namespace ApiUsers.Controllers
                     displayMessage = ErrorMessage;
                 }
 
-                var response = new ResponseDto() { IsSucces = success, DisplayMessage = displayMessage };
+                var response = new ResponseDto() { IsSuccess = success, DisplayMessage = displayMessage };
 
                 return success ? Ok(response) : BadRequest(response);
             }

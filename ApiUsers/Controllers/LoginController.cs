@@ -46,7 +46,7 @@ namespace ApiUsers.Controllers
                     displayMessage = "Ha iniciado sesión correctamente.";
                     var response = new ResponseDto()
                     {
-                        IsSucces = true,
+                        IsSuccess = true,
                         DisplayMessage = displayMessage,
                         Result = new { Token = tokenValue, User = user }
                     };
@@ -70,12 +70,12 @@ namespace ApiUsers.Controllers
 
             var response = new ResponseDto
             {
-                IsSucces = true,
+                IsSuccess = true,
                 DisplayMessage = "Usuario desconectado",
                 Result = "Usuario desconectado"
             };
 
-            return response.IsSucces
+            return response.IsSuccess
                 ? Task.FromResult<IActionResult>(Ok(response))
                 : Task.FromResult<IActionResult>(BadRequest(response));
         }
