@@ -213,7 +213,7 @@ namespace ApiUsers.Controllers
             
         }
 
-        
+        [Authorize]
         [HttpPost]
         [Route("BulkByExcelLayout")]
         public async Task<IActionResult> BulkByExcelLayout(IFormFile _file)
@@ -255,6 +255,7 @@ namespace ApiUsers.Controllers
                     cellIndex++;
                 }
 
+                //si todo esta ok se inserta
                 bool success = await _repository.BulkInsertAsync(users);
 
                 var response = new ResponseDto()
