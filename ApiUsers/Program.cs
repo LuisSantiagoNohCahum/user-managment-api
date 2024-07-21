@@ -1,5 +1,6 @@
 using ApiUsers.DataBaseContext;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -32,6 +33,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddMvc().AddSessionStateTempDataProvider();
+builder.Services.AddSession();
+builder.Services.AddDataProtection().SetApplicationName("Backend");
+
 //DATABASE CONNECTION
 builder.Services.AddDbContext<GeneralRepositoryContext>(e => e.UseSqlServer(builder.Configuration.GetConnectionString("DefaultDatabase")));
 var app = builder.Build();
@@ -44,6 +49,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseSession();
 
 app.UseHttpsRedirection();
 
