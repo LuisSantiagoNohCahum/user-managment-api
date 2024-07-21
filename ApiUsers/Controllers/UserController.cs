@@ -8,7 +8,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using System.Security.Claims;
+using System.Text;
+using Authorize = Microsoft.AspNetCore.Authorization.AuthorizeAttribute;
 
 namespace ApiUsers.Controllers
 {
@@ -19,10 +23,12 @@ namespace ApiUsers.Controllers
         //Dependency Injection
         //private readonly GeneralRepositoryContext _dbContext;
         private readonly UserRepository _repository;
-        public UserController(GeneralRepositoryContext dbContext)
+        private readonly IConfiguration _configuration;
+        public UserController(GeneralRepositoryContext dbContext, IConfiguration configuration)
         {
             //this._dbContext = dbContext;
             this._repository = new UserRepository(dbContext);
+            this._configuration = configuration;
         }
 
         [HttpPost]
@@ -89,6 +95,26 @@ namespace ApiUsers.Controllers
 
             if (user != null)
             {
+                var claims = new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
+                    new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+                    new Claim("UserId",user.Id.ToString()),
+                    new Claim("UserName",user.UserName.ToString()),
+                };
+
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var token = new JwtSecurityToken(
+                    _configuration["Jwt:Issuer"],
+                    _configuration["Jwt:Audience"],
+                    claims,
+                    expires: DateTime.UtcNow.AddMinutes(60),
+                    signingCredentials: signIn
+                    );
+                string tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
+
+
                 if (PasswordHasher.VerifyPassword(_loginDTO.Password, user.Password))
                 {
                     displayMessage = "Ha iniciado sesión correctamente.";
@@ -96,7 +122,7 @@ namespace ApiUsers.Controllers
                     {
                         IsSucces = true,
                         DisplayMessage = displayMessage,
-                        Result = user
+                        Result = new { Token = tokenValue, User = user}
                     };
                     return Ok(response);
                 }
@@ -110,6 +136,7 @@ namespace ApiUsers.Controllers
             return NoContent();
         }
 
+        [Authorize]
         [HttpGet]
         [Route("GetUsers")]
         public async Task<IActionResult> GetUsers()
@@ -118,6 +145,7 @@ namespace ApiUsers.Controllers
             return Ok(await _repository.GetAllAsync());
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(int id)
         {
@@ -138,6 +166,7 @@ namespace ApiUsers.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost]
         [Route("GetUsersBy")]
         public async Task<IActionResult> GetUsersBy(FilterUserDto _filter)
@@ -179,6 +208,7 @@ namespace ApiUsers.Controllers
                 });
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -198,6 +228,7 @@ namespace ApiUsers.Controllers
             //return NoContent();
         }
 
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, RequestUserDto entity)
         {
@@ -242,6 +273,7 @@ namespace ApiUsers.Controllers
             }
             
         }
+
         private static string ValidateUser(RequestUserDto _userDTO)
         {
             string MsgValidation = string.Empty;

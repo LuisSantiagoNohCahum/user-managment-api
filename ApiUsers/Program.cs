@@ -36,6 +36,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddDbContext<GeneralRepositoryContext>(e => e.UseSqlServer(builder.Configuration.GetConnectionString("DefaultDatabase")));
 var app = builder.Build();
 
+app.UseAuthentication();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
