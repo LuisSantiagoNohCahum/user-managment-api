@@ -20,13 +20,11 @@ namespace ApiUsers.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        //Dependency Injection
-        //private readonly GeneralRepositoryContext _dbContext;
+
         private readonly UserRepository _repository;
         private readonly IConfiguration _configuration;
         public UserController(GeneralRepositoryContext dbContext, IConfiguration configuration)
         {
-            //this._dbContext = dbContext;
             this._repository = new UserRepository(dbContext);
             this._configuration = configuration;
         }
@@ -120,7 +118,7 @@ namespace ApiUsers.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("GetUsers")]
+        [Route("GetAll")]
         public async Task<IActionResult> GetUsers()
         {
             //return response
@@ -150,7 +148,7 @@ namespace ApiUsers.Controllers
 
         [Authorize]
         [HttpPost]
-        [Route("GetUsersBy")]
+        [Route("GetBy")]
         public async Task<IActionResult> GetUsersBy(FilterUserDto _filter)
         {
             if (!ModelState.IsValid)
