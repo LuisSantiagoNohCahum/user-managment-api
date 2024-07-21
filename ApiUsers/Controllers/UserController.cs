@@ -213,6 +213,23 @@ namespace ApiUsers.Controllers
             
         }
 
+        [Authorize]
+        [HttpPost]
+        [Route("BulkByExcelLayout")]
+        public async Task<IActionResult> BulkByExcelLayout(IFormFile _file)
+        {
+            //add repo or class to manage the files and the excel getter data
+            throw new NotImplementedException();
+        }
+
+        [Authorize]
+        [HttpGet("ExportToExcel/{filename}")]
+        public async Task<IActionResult> ExportToExcel(string filename)
+        {
+            //add repo or class to manage the files and the excel getter data
+            throw new NotImplementedException();
+        }
+
         private static string ValidateUser(RequestUserDto _userDTO)
         {
             string MsgValidation = string.Empty;
@@ -225,5 +242,15 @@ namespace ApiUsers.Controllers
         //get user by id and user name
 
         //set statuc code in try catch process
+
+
+        /*
+         * Ok
+         * BadRequest
+         * NotFound
+         * NoContent
+         * Content
+         * StatusCode
+         */
     }
 }
