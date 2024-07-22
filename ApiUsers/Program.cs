@@ -44,6 +44,8 @@ var app = builder.Build();
 app.UseAuthentication();
 
 // Configure the HTTP request pipeline.
+
+//Change to IsProducction to see swagger docs
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

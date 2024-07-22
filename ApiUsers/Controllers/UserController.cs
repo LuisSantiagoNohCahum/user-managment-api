@@ -29,7 +29,7 @@ namespace ApiUsers.Controllers
 
         [HttpPost]
         [Route("Register")]
-        public async Task<IActionResult> Registration(RequestUserDto _userDto)
+        public async Task<IActionResult> Registration(UserDto _userDto)
         {
             if (!ModelState.IsValid)
             {
@@ -169,7 +169,7 @@ namespace ApiUsers.Controllers
 
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, RequestUserDto entity)
+        public async Task<IActionResult> Update(int id, UserDto entity)
         {
             try
             {
@@ -227,7 +227,7 @@ namespace ApiUsers.Controllers
                 int cellIndex = 2;
                 foreach (User _user in users)
                 {
-                    RequestUserDto _userDto = new RequestUserDto()
+                    UserDto _userDto = new UserDto()
                     { 
                         UserName = _user.UserName,
                         FullName = _user.FullName,
@@ -285,7 +285,7 @@ namespace ApiUsers.Controllers
             throw new NotImplementedException();
         }
 
-        private static string ValidateUser(RequestUserDto _userDTO)
+        private static string ValidateUser(UserDto _userDTO)
         {
             string MsgValidation = string.Empty;
             if (string.IsNullOrEmpty(_userDTO.FullName) || _userDTO.FullName == "string") MsgValidation = "Por favor, ingrese su Nombre Completo.";
