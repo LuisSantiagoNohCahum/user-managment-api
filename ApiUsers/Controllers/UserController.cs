@@ -80,29 +80,43 @@ namespace ApiUsers.Controllers
         [Route("GetAll")]
         public async Task<IActionResult> GetUsers()
         {
-            //return response
-            return Ok(await _repository.GetAllAsync());
+            try
+            {
+                return Ok(await _repository.GetAllAsync());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResponseDto()
+                {
+                    IsSuccess = false,
+                    DisplayMessage = ex.Message
+                });
+            }
+            
         }
 
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(int id)
         {
-            if (id <= 0)
+            try
             {
-                return NoContent();
-            }
-            var user = await _repository.GetByIdAsync(id);
+                if (id <= 0) throw new Exception("El id debe ser mayor a 0.");
 
-            //return response
-            if (user != null)
-            {
-                return Ok(user);
+                var user = await _repository.GetByIdAsync(id);
+
+                if (user == null) throw new Exception($"El usuario {id} no se encontro.");
+
+                return Ok(user); 
             }
-            else
+            catch (Exception ex)
             {
-                return NoContent();
+                return BadRequest(new ResponseDto() { 
+                    IsSuccess = false,
+                    DisplayMessage = ex.Message,
+                });
             }
+            
         }
 
         [Authorize]
@@ -178,6 +192,7 @@ namespace ApiUsers.Controllers
                 string ErrorMessage = ValidateUser(entity);
 
                 var userToUpdate = await _repository.GetByIdAsync(id);
+
                 if (string.IsNullOrEmpty(ErrorMessage))
                 {
                     if (userToUpdate != null)
@@ -288,9 +303,20 @@ namespace ApiUsers.Controllers
         private static string ValidateUser(UserDto _userDTO)
         {
             string MsgValidation = string.Empty;
-            if (string.IsNullOrEmpty(_userDTO.FullName) || _userDTO.FullName == "string") MsgValidation = "Por favor, ingrese su Nombre Completo.";
-            else if (!CustomValidator.ValidateEmail(_userDTO.UserName) || _userDTO.UserName == "string") MsgValidation = "Por favor, ingrese un correo electronico valido como usuario.";
-            else if (!CustomValidator.ValidatePassword(_userDTO.Password) || _userDTO.Password == "string") MsgValidation = "Por favor, ingrese una contraseña valida de 10 caracteres (3 minusculas, 3 mayusculas, 2 numeros y 2 caracteres especiales)";
+
+            if (string.IsNullOrEmpty(_userDTO.FullName) || _userDTO.FullName == "string")
+            {
+                MsgValidation = "Por favor, ingrese su Nombre Completo.";
+            }
+            else if (!CustomValidator.ValidateEmail(_userDTO.UserName) || _userDTO.UserName == "string")
+            {
+                MsgValidation = "Por favor, ingrese un correo electronico valido como usuario.";
+            }
+            else if (!CustomValidator.ValidatePassword(_userDTO.Password) || _userDTO.Password == "string")
+            {
+                MsgValidation = "Por favor, ingrese una contraseña valida de 10 caracteres (3 minusculas, 3 mayusculas, 2 numeros y 2 caracteres especiales)";
+            }
+            
             return MsgValidation;
         }
 
