@@ -1,6 +1,6 @@
 ﻿using ApiUsers.DataBaseContext;
 using ApiUsers.Models.Dto.Request;
-using ApiUsers.Models.Dto.Request;
+using ApiUsers.Models.Dto.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +45,25 @@ namespace ApiUsers.Controllers
             }
 
             return BadRequest("Ya existe un rol con la clave de tipo espefificada.");
+        }
+
+        [HttpGet]
+        [Route("GetAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                var data = await _dbContext.RolTypes.ToListAsync();
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResponseDto() { 
+                    IsSuccess = false,
+                    DisplayMessage = ex.Message
+                });
+            }
         }
     }
 }
