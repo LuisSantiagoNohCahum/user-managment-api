@@ -46,13 +46,19 @@ app.UseAuthentication();
 // Configure the HTTP request pipeline.
 
 //Change to IsProducction to see swagger docs
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseSession();
+
+app.UseCors(options => options
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+);
 
 app.UseHttpsRedirection();
 

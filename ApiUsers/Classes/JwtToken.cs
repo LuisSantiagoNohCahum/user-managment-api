@@ -26,7 +26,7 @@ namespace ApiUsers.Classes
                     _configuration["Jwt:Issuer"],
                     _configuration["Jwt:Audience"],
                     claims,
-                    expires: DateTime.UtcNow.AddMinutes(60),
+                    expires: DateTime.UtcNow.AddMinutes(1440),
                     signingCredentials: signIn
                     );
 
