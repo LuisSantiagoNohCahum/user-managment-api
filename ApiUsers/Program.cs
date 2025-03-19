@@ -46,7 +46,7 @@ app.UseAuthentication();
 // Configure the HTTP request pipeline.
 
 //Change to IsProducction to see swagger docs
-if (app.Environment.IsProduction())
+if (!app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();

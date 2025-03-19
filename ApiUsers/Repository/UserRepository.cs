@@ -29,7 +29,7 @@ namespace ApiUsers.Repository
 
             var users = _context.Users.AsQueryable();
 
-            if (_filter.UserName != filterTmp.UserName && !string.IsNullOrEmpty(_filter.UserName)) users = users.Where(x => x.UserName == _filter.UserName);
+            if (_filter.UserName != filterTmp.UserName && !string.IsNullOrEmpty(_filter.UserName)) users = users.Where(x => x.UserName.Contains(_filter.UserName));
 
             if (_filter.Type != filterTmp.Type) users = users.Where(x => x.RolType == _filter.Type);
             
@@ -37,7 +37,7 @@ namespace ApiUsers.Repository
 
             var data = await users.ToListAsync();
 
-            return data;
+            return data.FindAll(x => x.IsActive == 1);
         }
 
         public async Task<User> GetByIdAsync(int id)

@@ -124,41 +124,39 @@ namespace ApiUsers.Controllers
         [Route("GetBy")]
         public async Task<IActionResult> GetUsersBy(FilterUserDto _filter)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
-            FilterUserDto filterTmp = new FilterUserDto();
-
-            string messageError = string.Empty;
-
-            bool existRequiredFilter = (_filter.UserName != filterTmp.UserName && !string.IsNullOrEmpty(_filter.UserName))
-                ||(_filter.Type != filterTmp.Type) 
-                || (_filter.CreatedOn != filterTmp.CreatedOn);
-
-            if (!existRequiredFilter)
-            {
-                messageError = "Debe ingresar al menos un valor en algun filtro.";
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(_filter.UserName) && !CustomValidator.ValidateEmail(_filter.UserName))
+                if (!ModelState.IsValid)
                 {
-                    messageError = "Ingrese un correo valido.";
+                    return BadRequest(ModelState);
                 }
+                FilterUserDto filterTmp = new FilterUserDto();
+                IEnumerable<Models.User> data = new List<User>();
+                string messageError = string.Empty;
+
+                bool existRequiredFilter = (_filter.UserName != filterTmp.UserName && !string.IsNullOrEmpty(_filter.UserName))
+                    || (_filter.Type != filterTmp.Type)
+                    || (_filter.CreatedOn != filterTmp.CreatedOn);
+
+                if (!existRequiredFilter)
+                {
+                    data = await _repository.GetAllAsync();
+                }
+                else
+                {
+                    data = await _repository.GetAllByAsync(_filter);
+                }
+
+                return Ok(data);
             }
-            bool success = existRequiredFilter && string.IsNullOrEmpty(messageError);
-
-            IEnumerable<Models.User> data = new List<User>();
-
-            if (success) data = await _repository.GetAllByAsync(_filter);
-
-            return success ? 
-                Ok(data) : 
-                BadRequest(new ResponseDto() { 
-                    IsSuccess = false, 
-                    DisplayMessage = messageError
+            catch (Exception ex)
+            {
+                return BadRequest(new ResponseDto()
+                {
+                    IsSuccess = false,
+                    DisplayMessage = ex.Message
                 });
+            } 
         }
 
         [Authorize]
