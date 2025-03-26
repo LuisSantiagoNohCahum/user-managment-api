@@ -1,21 +1,24 @@
-﻿namespace ApiUsers.Models
+﻿using ApiUsers.Models.Base;
+using System.ComponentModel.DataAnnotations;
+
+namespace ApiUsers.Models
 {
-    public class User
+    public class User : Entity
     {
-        public int Id { get; set; }
+        [MaxLength(200)]
+        public string? Email { get; set; }
 
-        public string FullName { get; set; }
+        [MaxLength(200)]
+        public string? Password { get; set; }
 
-        public string UserName { get; set; }
+        [MaxLength(100)]
+        public string? FirstName { get; set; }
 
-        public string Password { get; set; }
+        [MaxLength(100)]
+        public string? LastName { get; set; }
 
-        public int IsActive { get; set; } = 1;
+        public bool IsActive { get; set; } //= 1;
 
-        public DateTime CreatedOn { get; set; } //= DateTime.Now;
-
-        public DateTime UpdatedOn { get; set;}
-
-        public int RolType { get; set; } = 0;
+        public int RolId { get; set; } //= 0;
     }
 }

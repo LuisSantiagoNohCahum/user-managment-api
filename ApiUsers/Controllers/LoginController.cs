@@ -1,12 +1,9 @@
-﻿using ApiUsers.Classes;
-using ApiUsers.DataBaseContext;
-using ApiUsers.Models.Dto.Request;
-using ApiUsers.Models.Dto.Responses;
-using ApiUsers.Repository;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using ApiUsers.Interfaces;
+using ApiUsers.Models.Common;
+using ApiUsers.Models.Requests;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 namespace ApiUsers.Controllers
 {
@@ -14,70 +11,24 @@ namespace ApiUsers.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
-        private readonly UserRepository _repository;
-        private readonly IConfiguration _configuration;
-        public LoginController(GeneralRepositoryContext dbContext, IConfiguration configuration)
+        private readonly ILoginService _loginService;
+        public LoginController(ILoginService loginService)
         {
-            this._repository = new UserRepository(dbContext);
-            this._configuration = configuration;
+            _loginService = loginService;
         }
 
         [HttpPost]
         [Route("Login")]
-        public async Task<IActionResult> Login(LoginUserDto _loginDTO)
+        public async Task<IActionResult> Login(LoginRequest request, [FromServices] IValidator<LoginRequest> validator, CancellationToken cancellationToken)
         {
-            if (!CustomValidator.ValidateEmail(_loginDTO.UserName))
-            {
-                return BadRequest("Ingrese un correo valido.");
-            }
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
-            var user = await _repository.GetByUserName(_loginDTO.UserName);
-
-            bool success = true;
-            string tokenValue = string.Empty;
-            string displayMessage = string.Empty;
-
-            if (user != null)
-            {
-                if (PasswordHasher.VerifyPassword(_loginDTO.Password, user.Password))
-                {
-                    tokenValue = JwtToken.GenerateToken(user, _configuration);
-
-                    displayMessage = "Ha iniciado sesión correctamente.";
-                    var response = new ResponseDto()
-                    {
-                        IsSuccess = true,
-                        DisplayMessage = displayMessage,
-                        Result = new { Token = tokenValue, User = user }
-                    };
-                    return Ok(response);
-                }
-                else
-                {
-                    return BadRequest("Usuario o contraseña incorrecta");
-                }
-
-            }
-            //return response
-            return NoContent();
+            return validationResult.IsValid
+                ? Ok(await _loginService.LoginAsync(request, cancellationToken))
+                : BadRequest(GetResponseFromWrongValidation(validationResult));
         }
 
-        [Authorize]
-        [HttpPost("Logout")]
-        public Task<IActionResult> Logout()
-        {
-            HttpContext.Session.Clear();
-
-            var response = new ResponseDto
-            {
-                IsSuccess = true,
-                DisplayMessage = "Usuario desconectado",
-                Result = "Usuario desconectado"
-            };
-
-            return response.IsSuccess
-                ? Task.FromResult<IActionResult>(Ok(response))
-                : Task.FromResult<IActionResult>(BadRequest(response));
-        }
+        private ApiResponse<string> GetResponseFromWrongValidation(ValidationResult validationResult)
+            => ApiResponse<string>.FailResponse(validationResult.Errors.Select(e => e.ErrorMessage).ToArray());
     }
 }

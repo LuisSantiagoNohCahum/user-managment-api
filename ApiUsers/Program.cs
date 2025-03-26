@@ -1,69 +1,73 @@
-using ApiUsers.DataBaseContext;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using ApiUsers.Repository;
+using FluentValidation;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configure the API services here
 
+
+// Add controllers
 builder.Services.AddControllers();
+
+// Configure the swagger docs generator
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//JSON WEB TOKEN
+// Configure Json Web Token for auth
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options=>
 {
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        ValidIssuer = builder.Configuration["JwtToken:Issuer"],
+        ValidAudience = builder.Configuration["JwtToken:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtToken:Key"] ?? ""))
     };
 });
 
-builder.Services.AddMvc().AddSessionStateTempDataProvider();
-builder.Services.AddSession();
-builder.Services.AddDataProtection().SetApplicationName("Backend");
+// Configure the EF database context
+builder.Services.AddDbContext<AppDbContext>(e => e.UseSqlServer(builder.Configuration.GetConnectionString("DefaultDatabase")));
 
-//DATABASE CONNECTION
-builder.Services.AddDbContext<GeneralRepositoryContext>(e => e.UseSqlServer(builder.Configuration.GetConnectionString("DefaultDatabase")));
+// Configure to use Fluent Validatiors
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly, includeInternalTypes: true);
+
 var app = builder.Build();
 
+// Use the auth config
+app.UseAuthorization();
 app.UseAuthentication();
 
-// Configure the HTTP request pipeline.
-
-//Change to IsProducction to see swagger docs
-if (!app.Environment.IsProduction())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseSession();
-
+// Configure CORS Policy
 app.UseCors(options => options
     .AllowAnyOrigin()
     .AllowAnyMethod()
     .AllowAnyHeader()
 );
 
-app.UseHttpsRedirection();
+// Show swagger config
+app.UseSwagger();
+app.UseSwaggerUI();
 
-app.UseAuthorization();
+// Enable use static files
+string rootFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+if(!Directory.Exists(rootFolder)) Directory.CreateDirectory(rootFolder);
 
+app.UseStaticFiles(new StaticFileOptions() { 
+    RequestPath = "/Private",
+    ServeUnknownFileTypes = true,
+    FileProvider = new PhysicalFileProvider(rootFolder)
+});
+
+// Map controllers
 app.MapControllers();
 
 app.Run();

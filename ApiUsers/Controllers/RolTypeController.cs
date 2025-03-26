@@ -1,69 +1,19 @@
-﻿using ApiUsers.DataBaseContext;
-using ApiUsers.Models.Dto.Request;
-using ApiUsers.Models.Dto.Responses;
-using Microsoft.AspNetCore.Http;
+﻿using ApiUsers.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace ApiUsers.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RolTypeController : ControllerBase
     {
-        private readonly GeneralRepositoryContext _dbContext;
-        public RolTypeController(GeneralRepositoryContext dbContext)
+        private readonly IRolService _rolService;
+        public RolTypeController(IRolService rolService)
         {
-            this._dbContext = dbContext;
+            _rolService = rolService;
         }
 
-        [HttpPost]
-        [Route("Role")]
-        public async Task<IActionResult> Create(RolTypeDto _role)
-        { 
-            if (!ModelState.IsValid) 
-            {
-                return NoContent();
-            }
-
-            if (string.IsNullOrEmpty(_role.Name) || string.IsNullOrEmpty(_role.Type))
-            {
-                return BadRequest("Debe ingresar valores validos.");
-            }
-
-            var roleType = new Models.RolType() { Name = _role.Name, Type = _role.Type, CreatedOn = DateTime.Now };
-
-            var roleTemp = await _dbContext.RolTypes.FirstOrDefaultAsync(x => x.Type == _role.Type);
-
-            if (roleTemp == null) 
-            {
-                _dbContext.RolTypes.Add(roleType);
-                _dbContext.SaveChanges();
-
-                return Ok("Elemento guardado correctamente.");
-            }
-
-            return BadRequest("Ya existe un rol con la clave de tipo espefificada.");
-        }
-
-        [HttpGet]
-        [Route("GetAll")]
-        public async Task<IActionResult> GetAll()
-        {
-            try
-            {
-                var data = await _dbContext.RolTypes.ToListAsync();
-
-                return Ok(data);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new ResponseDto() { 
-                    IsSuccess = false,
-                    DisplayMessage = ex.Message
-                });
-            }
-        }
     }
 }
