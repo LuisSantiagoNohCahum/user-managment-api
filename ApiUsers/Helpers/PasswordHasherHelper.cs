@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace ApiUsers.Classes
+namespace ApiUsers.Helpers
 {
     public sealed class PasswordHasherHelper : IPasswordHasherHelper
     {

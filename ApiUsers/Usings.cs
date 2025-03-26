@@ -11,6 +11,8 @@ global using ApiUsers.Models.Requests.Uers;
 global using ApiUsers.Repository;
 global using ApiUsers.Repository.Seeds;
 global using FluentValidation;
+global using ApiUsers.Helpers;
+global using ApiUsers.Services;
 global using FluentValidation.Results;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using Microsoft.AspNetCore.Mvc;
