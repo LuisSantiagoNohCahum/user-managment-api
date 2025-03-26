@@ -2,7 +2,7 @@
 {
     public class RolRepository : BaseRepository<Rol, int>, IRolRepository
     {
-        public RolRepository(AppDbContext dbContext, HttpContextAccessor httpContextAccessor) 
+        public RolRepository(AppDbContext dbContext, IHttpContextAccessor httpContextAccessor) 
             : base(dbContext, httpContextAccessor)
         { }
     }

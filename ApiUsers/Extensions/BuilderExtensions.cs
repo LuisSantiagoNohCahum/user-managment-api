@@ -11,6 +11,7 @@ namespace ApiUsers.Extensions
 
             services.AddControllers();
 
+            services.AddHttpContextAccessor();
             services.AddJwtConfiguration(configuration);
             services.AddSwaggerConfiguration(builderOptions);
             services.AddInfrastructureServices(configuration);
@@ -44,17 +45,21 @@ namespace ApiUsers.Extensions
 
         public static IServiceCollection AddSwaggerConfiguration(this IServiceCollection services, BuilderOptions options)
         {
-            string? swaggerDocName = string.IsNullOrEmpty(options.SwaggerName) 
+            string? swaggerDocName = string.IsNullOrEmpty(options.SwaggerTittle) 
                 ? typeof(Program).Assembly.GetName()?.Name 
-                : options.SwaggerName;
+                : options.SwaggerTittle;
 
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen(s => s.SwaggerDoc(swaggerDocName, new OpenApiInfo
+            services.AddSwaggerGen(c =>
             {
-                Version = options.SwaggerVersion ?? "v1.0",
-                Title = options.SwaggerTittle ?? typeof(Program).Assembly.GetName()?.FullName,
-                Description = options.SwaggerDescription ?? $"An ASP.NET Core Web API for {swaggerDocName}"
-            })); ;;
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = options.SwaggerVersion ?? "v1.0",
+                    Title = swaggerDocName,
+                    Description = options.SwaggerDescription ?? $"An ASP.NET Core Web API for {swaggerDocName}"
+                });
+                c.ResolveConflictingActions(descriptions => descriptions.First());
+            });
 
             return services;
         }

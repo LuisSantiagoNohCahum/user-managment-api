@@ -4,9 +4,9 @@
         where TEntity : class, IEntity
     {
         protected readonly AppDbContext _dbContext;
-        private readonly HttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public BaseRepository(AppDbContext dbContext, HttpContextAccessor httpContextAccessor)
+        public BaseRepository(AppDbContext dbContext, IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
             _httpContextAccessor = httpContextAccessor;

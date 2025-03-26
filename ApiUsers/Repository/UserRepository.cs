@@ -2,7 +2,7 @@
 {
     public sealed class UserRepository : BaseRepository<User, int>, IUserRepository
     {
-        public UserRepository(AppDbContext dbContext, HttpContextAccessor httpContextAccessor) 
+        public UserRepository(AppDbContext dbContext, IHttpContextAccessor httpContextAccessor) 
             : base(dbContext, httpContextAccessor) 
         { }
     }

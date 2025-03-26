@@ -9,6 +9,7 @@ namespace ApiUsers.Extensions
             app.UseAuthorization();
             app.UseAuthentication();
             app.UseCustomCorsPolicy();
+            app.UseHttpsRedirection();
 
             if (useStaticFiles)
                 app.UseCustomStaticFiles(rootFolder);
