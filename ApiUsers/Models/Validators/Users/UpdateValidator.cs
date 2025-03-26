@@ -1,7 +1,4 @@
-﻿using ApiUsers.Models.Requests.Uers;
-using FluentValidation;
-
-namespace ApiUsers.Models.Validators.Users
+﻿namespace ApiUsers.Models.Validators.Users
 {
     public class UpdateValidator : AbstractValidator<UpdateRequest>
     {

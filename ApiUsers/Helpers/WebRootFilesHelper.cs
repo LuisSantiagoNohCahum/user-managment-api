@@ -1,6 +1,4 @@
-﻿using ApiUsers.Interfaces.Helpers;
-
-namespace ApiUsers.Helpers
+﻿namespace ApiUsers.Helpers
 {
     /// <summary>
     /// Exposes methods to manage internal static files and the access from external downoad action.

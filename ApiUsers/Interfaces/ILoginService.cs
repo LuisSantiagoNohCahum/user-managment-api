@@ -1,6 +1,4 @@
-﻿using ApiUsers.Models.Requests;
-
-namespace ApiUsers.Interfaces
+﻿namespace ApiUsers.Interfaces
 {
     public interface ILoginService
     {

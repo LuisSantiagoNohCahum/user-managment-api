@@ -1,6 +1,4 @@
-﻿using ApiUsers.Interfaces;
-
-namespace ApiUsers.Services
+﻿namespace ApiUsers.Services
 {
     public sealed class RolService : IRolService
     {

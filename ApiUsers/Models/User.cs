@@ -1,5 +1,4 @@
-﻿using ApiUsers.Models.Base;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ApiUsers.Models
 {

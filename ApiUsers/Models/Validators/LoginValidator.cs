@@ -1,7 +1,4 @@
-﻿using ApiUsers.Models.Requests;
-using FluentValidation;
-
-namespace ApiUsers.Models.Validators.Login
+﻿namespace ApiUsers.Models.Validators
 {
     public class LoginValidator : AbstractValidator<LoginRequest>
     {

@@ -1,11 +1,4 @@
-﻿using ApiUsers.Interfaces;
-using ApiUsers.Models.Common;
-using ApiUsers.Models.Requests;
-using FluentValidation;
-using FluentValidation.Results;
-using Microsoft.AspNetCore.Mvc;
-
-namespace ApiUsers.Controllers
+﻿namespace ApiUsers.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

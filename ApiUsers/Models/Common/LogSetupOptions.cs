@@ -2,6 +2,6 @@
 {
     public class LogSetupOptions
     {
-        // Enable as singleton
+        //TODO. Enable log as singleton and use the option pattern
     }
 }

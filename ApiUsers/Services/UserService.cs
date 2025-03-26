@@ -1,17 +1,8 @@
-﻿using ApiUsers.Interfaces;
-using ApiUsers.Interfaces.Helpers;
-using ApiUsers.Interfaces.Repositories;
-using ApiUsers.Models;
-using ApiUsers.Models.Dtos;
-using ApiUsers.Models.Requests;
-using ApiUsers.Models.Requests.Uers;
-using Microsoft.AspNetCore.Mvc;
-
-namespace ApiUsers.Services
+﻿namespace ApiUsers.Services
 {
     //TODO. Change all ct to cancelationToken param name
     //TODO. Update password endpoint only enable for current user logged and only change password with security code and the last correct password validate
-    //TODO. Map to GetAllResponse, dont send encoded/decoded password
+    //TODO. Map to GetAllResponse, dont send encoded/decoded password, manage password in other endpoints
     public sealed class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;

@@ -1,16 +1,14 @@
-﻿using ApiUsers.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
 
 namespace ApiUsers.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class RolTypeController : ControllerBase
+    public class RolesController : ControllerBase
     {
         private readonly IRolService _rolService;
-        public RolTypeController(IRolService rolService)
+        public RolesController(IRolService rolService)
         {
             _rolService = rolService;
         }

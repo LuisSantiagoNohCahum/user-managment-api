@@ -1,8 +1,4 @@
-﻿using ApiUsers.Models.Requests;
-using FluentValidation;
-using FluentValidation.Validators;
-
-namespace ApiUsers.Models.Validators.Users
+﻿namespace ApiUsers.Models.Validators.Users
 {
     public class SignUpValidator : AbstractValidator<SignUpRequest>
     {

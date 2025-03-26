@@ -1,7 +1,4 @@
-﻿using ApiUsers.Interfaces.Repositories;
-using ApiUsers.Models;
-
-namespace ApiUsers.Repository
+﻿namespace ApiUsers.Repository
 {
     public class RolRepository : BaseRepository<Rol, int>, IRolRepository
     {

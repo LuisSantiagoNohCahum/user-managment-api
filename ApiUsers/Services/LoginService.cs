@@ -1,10 +1,4 @@
-﻿using ApiUsers.Interfaces;
-using ApiUsers.Interfaces.Helpers;
-using ApiUsers.Interfaces.Repositories;
-using ApiUsers.Models;
-using ApiUsers.Models.Requests;
-
-namespace ApiUsers.Services
+﻿namespace ApiUsers.Services
 {
     public class LoginService : ILoginService
     {

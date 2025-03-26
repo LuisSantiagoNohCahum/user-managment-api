@@ -1,11 +1,4 @@
-﻿using ApiUsers.Interfaces;
-using ApiUsers.Models.Common;
-using ApiUsers.Models.Requests;
-using ApiUsers.Models.Requests.Uers;
-using FluentValidation;
-using FluentValidation.Results;
-using Microsoft.AspNetCore.Mvc;
-using Authorize = Microsoft.AspNetCore.Authorization.AuthorizeAttribute;
+﻿using Microsoft.AspNetCore.Authorization;
 
 namespace ApiUsers.Controllers
 {
@@ -14,12 +7,11 @@ namespace ApiUsers.Controllers
 
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
 
-        public UserController(IUserService userService, 
-            IValidator<SignUpRequest> signUpValidator)
+        public UsersController(IUserService userService)
         {
             _userService = userService;
         }

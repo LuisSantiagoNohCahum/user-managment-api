@@ -1,11 +1,4 @@
-﻿using ApiUsers.Models;
-using ApiUsers.Models.Dtos;
-using ApiUsers.Models.Requests;
-using ApiUsers.Models.Requests.Uers;
-using ApiUsers.Models.Responses.Users;
-using Microsoft.AspNetCore.Mvc;
-
-namespace ApiUsers.Interfaces
+﻿namespace ApiUsers.Interfaces
 {
     public interface IUserService
     {

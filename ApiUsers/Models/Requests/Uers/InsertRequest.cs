@@ -1,5 +1,4 @@
-﻿
-namespace ApiUsers.Models.Requests.Uers
+﻿namespace ApiUsers.Models.Requests.Uers
 {
     public class InsertRequest
     {

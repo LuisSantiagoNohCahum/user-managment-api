@@ -1,6 +1,4 @@
-﻿using ApiUsers.Interfaces;
-using ApiUsers.Models;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace ApiUsers.Services

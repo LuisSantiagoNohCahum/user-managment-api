@@ -1,7 +1,4 @@
-﻿using ApiUsers.Models;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace ApiUsers.Repository.Seeds
+﻿namespace ApiUsers.Repository.Seeds
 {
     public class RolSeeds : IEntityTypeConfiguration<Rol>
     {

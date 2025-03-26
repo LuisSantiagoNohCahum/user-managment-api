@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace ApiUsers.Interfaces.Repositories
+﻿namespace ApiUsers.Interfaces.Repositories
 {
     public interface IRepository<TEntity, TPrimaryKey> : 
         IRepositoryQueries<TEntity, TPrimaryKey>, 

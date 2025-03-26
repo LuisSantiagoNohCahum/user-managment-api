@@ -1,8 +1,4 @@
-﻿using ApiUsers.Interfaces.Helpers;
-using ApiUsers.Models;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace ApiUsers.Repository.Seeds
+﻿namespace ApiUsers.Repository.Seeds
 {
     public class UserSeeds : IEntityTypeConfiguration<User>
     {

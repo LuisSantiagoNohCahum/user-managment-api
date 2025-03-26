@@ -1,7 +1,4 @@
-﻿using ApiUsers.Models;
-using ApiUsers.Models.Dtos;
-
-namespace ApiUsers.Extensions
+﻿namespace ApiUsers.Extensions
 {
     public static class ModelMapperExtensions
     {

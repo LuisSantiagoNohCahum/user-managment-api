@@ -1,7 +1,4 @@
-﻿using ApiUsers.Interfaces.Helpers;
-using ApiUsers.Models;
-using ApiUsers.Repository.Seeds;
-namespace ApiUsers.Repository
+﻿namespace ApiUsers.Repository
 {
     public class AppDbContext : DbContext
     {

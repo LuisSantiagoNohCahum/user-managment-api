@@ -1,7 +1,4 @@
-﻿using ApiUsers.Models.Requests;
-using FluentValidation;
-
-namespace ApiUsers.Models.Validators.Users
+﻿namespace ApiUsers.Models.Validators.Users
 {
     public class GetAllValidator : AbstractValidator<GetAllRequest>
     {

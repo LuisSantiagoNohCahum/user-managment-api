@@ -1,14 +1,10 @@
-﻿using ApiUsers.Interfaces.Repositories;
-using ApiUsers.Models.Base;
-using System.Linq.Expressions;
-
-namespace ApiUsers.Repository
+﻿namespace ApiUsers.Repository
 {
     public abstract class BaseRepository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey>
         where TEntity : class, IEntity
     {
         protected readonly AppDbContext _dbContext;
-        private readonly HttpContextAccessor _httpContextAccessor; // Or inject IServiceProvider and use GetRequiredService<>
+        private readonly HttpContextAccessor _httpContextAccessor; //TODO. Or inject IServiceProvider and use GetRequiredService<>
 
         public BaseRepository(AppDbContext dbContext, HttpContextAccessor httpContextAccessor)
         {
