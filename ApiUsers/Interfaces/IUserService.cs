@@ -2,13 +2,13 @@
 {
     public interface IUserService
     {
-        Task<int> DeleteAsync(int id, CancellationToken ct);
-        Task<FileStreamResult> ExportToExcelAsync(CancellationToken ct);
-        Task<IEnumerable<UserDto>> GetAllAsync(GetAllRequest request, CancellationToken ct);
-        Task<UserDto?> GetAsync(int id, CancellationToken ct);
-        Task<int> ImportFromExcelAsync(IFormFile layoutRequest, CancellationToken ct);
-        Task<int> InsertAsync(InsertRequest request, CancellationToken ct);
-        Task<bool> SignUpAsync(SignUpRequest request, CancellationToken ct);
-        Task<int> UpdateAsync(UpdateRequest request, CancellationToken ct);
+        Task<bool> SignUpAsync(SignUpRequest request, CancellationToken cancellationToken);
+        Task<UserDto?> GetAsync(int id, CancellationToken cancellationToken);
+        Task<IEnumerable<UserDto>> GetAllAsync(GetAllRequest request, CancellationToken cancellationToken);
+        Task<int> InsertAsync(InsertRequest request, CancellationToken cancellationToken);
+        Task<int> UpdateAsync(UpdateRequest request, CancellationToken cancellationToken);
+        Task<int> DeleteAsync(int id, CancellationToken cancellationToken);
+        Task<FileStreamResult> ExportToExcelAsync(CancellationToken cancellationToken);
+        Task<int> ImportFromExcelAsync(IFormFile layoutRequest, CancellationToken cancellationToken);
     }
 }

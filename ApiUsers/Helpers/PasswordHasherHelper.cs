@@ -4,7 +4,6 @@ namespace ApiUsers.Classes
 {
     public sealed class PasswordHasherHelper : IPasswordHasherHelper
     {
-        //TODO. Change obsolete hash methods, check which is the best way to generate hashing passwords.
         public string HashPassword(string plainText)
         {
             // Generar un salt aleatorio

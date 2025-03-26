@@ -2,9 +2,6 @@
 
 namespace ApiUsers.Controllers
 {
-    //TODO. Change name to UsersController
-    //SingUp Response "User successfully registered" || "There is already a registered user with the same email address" or enable the find by email
-
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -39,11 +36,10 @@ namespace ApiUsers.Controllers
 
         [Authorize]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser(int id, CancellationToken ct)
-            => Ok(await _userService.GetAsync(id, ct));
+        public async Task<IActionResult> GetUser(int id, CancellationToken cancellationToken)
+            => Ok(await _userService.GetAsync(id, cancellationToken));
 
 
-        //TODO. Validate rol, only admin rol, can be insert new complete user.
         [Authorize]
         [HttpPost("Insert")]
         public async Task<IActionResult> Insert(InsertRequest request, [FromServices] IValidator<InsertRequest> validator, CancellationToken cancellationToken)

@@ -13,10 +13,10 @@
             builder.HasData(
                 new User() 
                 { 
-                    Email = "default@default.email.com", 
+                    Email = "default@default.com", 
                     Password = _passwordHasherHelper.HashPassword("admin"), 
-                    FirstName = "Default", 
-                    LastName = "Default", 
+                    FirstName = "Admin", 
+                    LastName = "Admin", 
                     IsActive = true, 
                     RolId = 1, 
                     CreatedBy = "System", 

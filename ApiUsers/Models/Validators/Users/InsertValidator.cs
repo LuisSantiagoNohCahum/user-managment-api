@@ -4,7 +4,6 @@
     {
         public InsertValidator()
         {
-            //TODO. Validate if required field is equals to not null or only mean this field is necesary in the model, the value can be null, is this way, add the null rule again.
             RuleFor(r => r.FirstName)
                 .NotEmpty().WithMessage("Need provide a fisrt name");
 

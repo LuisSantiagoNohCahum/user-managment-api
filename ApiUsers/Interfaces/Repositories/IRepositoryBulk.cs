@@ -2,6 +2,6 @@
 {
     public interface IRepositoryBulk<TEntity> where TEntity : class
     {
-        Task<int> BulkInsert(IEnumerable<TEntity> bulkData, CancellationToken ct);
+        Task<int> BulkInsert(IEnumerable<TEntity> bulkData, CancellationToken cancellationToken);
     }
 }

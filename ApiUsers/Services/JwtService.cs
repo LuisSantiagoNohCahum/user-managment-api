@@ -17,7 +17,8 @@ namespace ApiUsers.Services
             var claims = new[]
             {
                 new Claim("Id", user.Id.ToString()),
-                new Claim("Email", user.Email ?? "")
+                new Claim("Email", user.Email ?? ""),
+                new Claim("RolId", user.RolId.ToString())
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();

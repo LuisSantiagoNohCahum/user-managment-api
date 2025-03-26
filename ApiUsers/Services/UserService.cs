@@ -1,8 +1,5 @@
 ﻿namespace ApiUsers.Services
 {
-    //TODO. Change all ct to cancelationToken param name
-    //TODO. Update password endpoint only enable for current user logged and only change password with security code and the last correct password validate
-    //TODO. Map to GetAllResponse, dont send encoded/decoded password, manage password in other endpoints
     public sealed class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
@@ -24,13 +21,13 @@
             _excelHelper = excelHelper;
         }
 
-        public async Task<bool> SignUpAsync(SignUpRequest request, CancellationToken ct)
+        public async Task<bool> SignUpAsync(SignUpRequest request, CancellationToken cancellationToken)
         {
-            bool existUser = await _userRepository.AnyAsync(u => !string.IsNullOrEmpty(u.Email) && u.Email.Equals(request.Email), ct);
+            bool existUser = await _userRepository.AnyAsync(u => !string.IsNullOrEmpty(u.Email) && u.Email.Equals(request.Email), cancellationToken);
 
             if (existUser) throw new Exception("The given email is being used.");
 
-            var guestRol = await _rolRepository.GetAsync(r => !string.IsNullOrEmpty(r.Code) && r.Code.Equals("GST"), ct);
+            var guestRol = await _rolRepository.GetAsync(r => !string.IsNullOrEmpty(r.Code) && r.Code.Equals("GST"), cancellationToken);
 
             await _userRepository.InsertAsync(new User()
             {
@@ -40,33 +37,33 @@
                 LastName = request.LastName,
                 IsActive = true,
                 RolId = guestRol?.Id ?? 0
-            }, ct);
+            }, cancellationToken);
 
             return true;
         }
 
-        public async Task<UserDto?> GetAsync(int id, CancellationToken ct)
+        public async Task<UserDto?> GetAsync(int id, CancellationToken cancellationToken)
         { 
-            var user = await _userRepository.GetAsync(id, ct);
+            var user = await _userRepository.GetAsync(id, cancellationToken);
             if (user is null) return default;
 
-            var rol = await _rolRepository.GetAsync(user.RolId, ct);
+            var rol = await _rolRepository.GetAsync(user.RolId, cancellationToken);
 
             var response = user.ToDto();
             response.Rol = rol is null ? default : rol.ToDto();
             return response;
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllAsync(GetAllRequest request, CancellationToken ct)
+        public async Task<IEnumerable<UserDto>> GetAllAsync(GetAllRequest request, CancellationToken cancellationToken)
         {
             
             var (filter, parameters) = GetFilterFromGetAllRequest(request);
 
             var users = parameters.Any()
-                ? await _userRepository.GetAllAsync(filter.ToString(), parameters.ToArray(), ct)
-                : await _userRepository.GetAllAsync(ct);
+                ? await _userRepository.GetAllAsync(filter.ToString(), parameters.ToArray(), cancellationToken)
+                : await _userRepository.GetAllAsync(cancellationToken);
 
-            var roles = await _rolRepository.GetAllAsync(ct);
+            var roles = await _rolRepository.GetAllAsync(cancellationToken);
 
             return users.Join(roles, 
                 user => user.RolId, 
@@ -116,7 +113,7 @@
             return (filter.ToString(), parameters);
         }
 
-        public async Task<int> InsertAsync(InsertRequest request, CancellationToken ct)
+        public async Task<int> InsertAsync(InsertRequest request, CancellationToken cancellationToken)
         {
             var user = new User()
             {
@@ -128,12 +125,12 @@
                 RolId = request.RolId
             };
 
-            return await _userRepository.InsertAsync(user, ct);
+            return await _userRepository.InsertAsync(user, cancellationToken);
         }
 
-        public async Task<int> UpdateAsync(UpdateRequest request, CancellationToken ct)
+        public async Task<int> UpdateAsync(UpdateRequest request, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetAsync(request.Id, ct);
+            var user = await _userRepository.GetAsync(request.Id, cancellationToken);
 
             if (user is null) return 0;
 
@@ -152,43 +149,43 @@
                 UpdatedOn = user.UpdatedOn
             };
 
-            return await _userRepository.UpdateAsync(setUser, ct);
+            return await _userRepository.UpdateAsync(setUser, cancellationToken);
         }
 
-        public async Task<int> DeleteAsync(int id, CancellationToken ct)
+        public async Task<int> DeleteAsync(int id, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetAsync(id, ct);
+            var user = await _userRepository.GetAsync(id, cancellationToken);
 
             if (user is not null)
-                return await _userRepository.DeleteAsync(user, ct);
+                return await _userRepository.DeleteAsync(user, cancellationToken);
 
             return 0;
         }
 
-        public async Task<int> ImportFromExcelAsync(IFormFile layoutRequest, CancellationToken ct)
+        public async Task<int> ImportFromExcelAsync(IFormFile layoutRequest, CancellationToken cancellationToken)
         {
             string fullFilePath = string.Empty;
             using (var data = new MemoryStream())
             {
-                await layoutRequest.CopyToAsync(data, ct);
-                fullFilePath = await _webRootFilesHelper.SaveFileAsync(data, layoutRequest.FileName, ct);
+                await layoutRequest.CopyToAsync(data, cancellationToken);
+                fullFilePath = await _webRootFilesHelper.SaveFileAsync(data, layoutRequest.FileName, cancellationToken);
                 fullFilePath.Guard(nameof(fullFilePath));
             }
 
-            var users = await _excelHelper.ReadWorkSheetAsync<User>(fullFilePath, isExpendedModelType: true, ct: ct);
+            var users = await _excelHelper.ReadWorkSheetAsync<User>(fullFilePath, isExpendedModelType: true, cancellationToken: cancellationToken);
 
             if (File.Exists(fullFilePath)) File.Delete(fullFilePath);
 
-            var bulkResult = await _userRepository.BulkInsert(users, ct);
+            var bulkResult = await _userRepository.BulkInsert(users, cancellationToken);
 
             return bulkResult;
         }
 
-        public async Task<FileStreamResult> ExportToExcelAsync(CancellationToken ct)
+        public async Task<FileStreamResult> ExportToExcelAsync(CancellationToken cancellationToken)
         {
-            var users = await _userRepository.GetAllAsync(ct);
+            var users = await _userRepository.GetAllAsync(cancellationToken);
 
-            var fileData = await _excelHelper.CreateWorkBookAsync(users, ct: ct);
+            var fileData = await _excelHelper.CreateWorkBookAsync(users, cancellationToken: cancellationToken);
 
             return new FileStreamResult(new MemoryStream(fileData), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             {

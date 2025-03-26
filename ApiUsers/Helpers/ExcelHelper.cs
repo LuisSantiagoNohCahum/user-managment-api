@@ -4,21 +4,20 @@ using MiniExcelLibs.OpenXml;
 
 namespace ApiUsers.Helpers
 {
-    //TODO. If Sheet name is null or empty take the first sheet in the workbook if exist, otherwise take the given sheet name.
     public class ExcelHelper : IExcelHelper
     {
         private readonly string _tempPath;
         public ExcelHelper(IWebHostEnvironment webHostEnvironment)
         {
-            _tempPath = webHostEnvironment.WebRootPath + "/Temp";
+            _tempPath = Path.Combine(webHostEnvironment.WebRootPath, "Temp");
         }
 
-        public async Task<byte[]> CreateWorkBookAsync<TRow>(IEnumerable<TRow> rows, string sheetName = "Export", OpenXmlConfiguration? exportConfiguration = null, string[]? ignoreColumns = null, bool takeDefaultValues = true, CancellationToken ct = default) where TRow : class
+        public async Task<byte[]> CreateWorkBookAsync<TRow>(IEnumerable<TRow> rows, string sheetName = "Export", OpenXmlConfiguration? exportConfiguration = null, string[]? ignoreColumns = null, bool takeDefaultValues = true, CancellationToken cancellationToken = default) where TRow : class
         {
             exportConfiguration ??= new OpenXmlConfiguration()
             {
                 EnableWriteNullValueCell = takeDefaultValues,
-                TableStyles = MiniExcelLibs.OpenXml.TableStyles.None,
+                TableStyles = TableStyles.None,
                 DynamicColumnFirst = true,
                 DynamicColumns = GetDynamicColumnsSetup<TRow>(ignoreColumns)
             };
@@ -27,9 +26,9 @@ namespace ApiUsers.Helpers
 
             string fullTempFilePath = Path.Combine(_tempPath, $"{Guid.NewGuid()}.xlsx");
 
-            await MiniExcel.SaveAsAsync(fullTempFilePath, rows, true, sheetName, configuration: exportConfiguration, cancellationToken: ct);
+            await MiniExcel.SaveAsAsync(fullTempFilePath, rows, true, sheetName, configuration: exportConfiguration, cancellationToken: cancellationToken);
 
-            var fileData = await File.ReadAllBytesAsync(fullTempFilePath, ct);
+            var fileData = await File.ReadAllBytesAsync(fullTempFilePath, cancellationToken);
 
             try { File.Delete(fullTempFilePath); } catch {}
             
@@ -49,19 +48,20 @@ namespace ApiUsers.Helpers
 
                 if (ignoreColumns is not null && ignoreColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    dynamicColumn = new DynamicExcelColumn(column.Name.ToLower())
+                    //Key -> to match propertie name, Name -> Column name to display
+                    dynamicColumn = new DynamicExcelColumn(column.Name)
                     {
-                        Name = column.Name,
+                        Name = column.Name.ToUpper(),
                         Ignore = true,
                         Width = 0
                     };
                 }
                 else
                 {
-                    dynamicColumn = new DynamicExcelColumn(column.Name.ToLower())
+                    dynamicColumn = new DynamicExcelColumn(column.Name)
                     {
+                        Name = column.Name.ToUpper(),
                         Index = index,
-                        Name = column.Name,
                         Ignore = false
                     };
 
@@ -74,7 +74,7 @@ namespace ApiUsers.Helpers
             return dynamicColumns.ToArray();
         }
 
-        public async Task<IEnumerable<TRow>> ReadWorkSheetAsync<TRow>(string filePath, string sheetName = "Import_Layout", bool isExpendedModelType = false, CancellationToken ct = default) where TRow : class, new()
+        public async Task<IEnumerable<TRow>> ReadWorkSheetAsync<TRow>(string filePath, string sheetName = "Import_Layout", bool isExpendedModelType = false, CancellationToken cancellationToken = default) where TRow : class, new()
         {
             filePath.Guard(nameof(filePath));
 
@@ -88,9 +88,9 @@ namespace ApiUsers.Helpers
             using (var excelStream = File.OpenRead(filePath))
             {
                 if (!isExpendedModelType)
-                    return await excelStream.QueryAsync<TRow>(sheetName: sheetName, cancellationToken: ct);
+                    return await excelStream.QueryAsync<TRow>(sheetName: sheetName, cancellationToken: cancellationToken);
 
-                var rows = await excelStream.QueryAsync(useHeaderRow: true, sheetName: sheetName, cancellationToken: ct);
+                var rows = await excelStream.QueryAsync(useHeaderRow: true, sheetName: sheetName, cancellationToken: cancellationToken);
 
                 if (rows is null || !rows.Any()) 
                     return result;

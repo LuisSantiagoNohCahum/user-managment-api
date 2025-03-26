@@ -15,7 +15,6 @@
         {
             modelBuilder.ApplyConfiguration(new UserSeeds(_passwordHasherHelper));
             modelBuilder.ApplyConfiguration(new RolSeeds());
-
         }
     }
 }
