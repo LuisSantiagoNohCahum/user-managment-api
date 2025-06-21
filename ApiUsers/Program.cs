@@ -10,7 +10,7 @@ app.UseBaseConfigurations();
 // dotnet ef database update -> to apply changes in database structs
 
 using var scope = app.Services.CreateScope();
-await using var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+using var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 await dbContext.Database.MigrateAsync();
 
 app.MapControllers();
