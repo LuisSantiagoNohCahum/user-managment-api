@@ -10,8 +10,10 @@ namespace ApiUsers.Extensions
             options?.Invoke(builderOptions);
 
             services.AddControllers();
-
             services.AddHttpContextAccessor();
+            services.AddAuthorization();
+            services.AddCors();
+
             services.AddJwtConfiguration(configuration);
             services.AddSwaggerConfiguration(builderOptions);
             services.AddInfrastructureServices(configuration);

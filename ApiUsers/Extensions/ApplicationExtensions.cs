@@ -6,8 +6,9 @@ namespace ApiUsers.Extensions
     {
         public static IApplicationBuilder UseBaseConfigurations(this IApplicationBuilder app, string rootFolder = "wwwroot", bool useStaticFiles = true, bool showSwaggerUi = true)
         {
-            app.UseAuthorization();
             app.UseAuthentication();
+            app.UseAuthorization();
+
             app.UseCustomCorsPolicy();
             app.UseHttpsRedirection();
 
@@ -36,7 +37,7 @@ namespace ApiUsers.Extensions
 
         public static IApplicationBuilder UseCustomStaticFiles(this IApplicationBuilder app, string rootFolder)
         {
-            string fullRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            string fullRootPath = Path.Combine(Directory.GetCurrentDirectory(), rootFolder);
 
             if (!Directory.Exists(fullRootPath)) Directory.CreateDirectory(fullRootPath);
 

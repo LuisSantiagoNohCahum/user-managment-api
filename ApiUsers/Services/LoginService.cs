@@ -15,7 +15,7 @@
 
         public async Task<string> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetAsync(u => !string.IsNullOrEmpty(u.Email) && u.Email.Equals(request), cancellationToken);
+            var user = await _userRepository.GetAsync(u => !string.IsNullOrEmpty(u.Email) && u.Email.Equals(request.Email), cancellationToken);
 
             if (user is null || !IsValidPassword(request, user))
                 throw new Exception("Email or password is wrong, try again.");

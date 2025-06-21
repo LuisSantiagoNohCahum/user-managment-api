@@ -13,8 +13,9 @@
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new UserSeeds(_passwordHasherHelper));
+            // TODO. Add relations between tables
             modelBuilder.ApplyConfiguration(new RolSeeds());
+            modelBuilder.ApplyConfiguration(new UserSeeds(_passwordHasherHelper));
         }
     }
 }

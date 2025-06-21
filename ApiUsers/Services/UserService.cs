@@ -159,6 +159,8 @@
             if (user is not null)
                 return await _userRepository.DeleteAsync(user, cancellationToken);
 
+            // Validate if user is default not allowed delete action
+
             return 0;
         }
 

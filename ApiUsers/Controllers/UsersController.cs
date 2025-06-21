@@ -24,7 +24,7 @@ namespace ApiUsers.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetAll")]
+        [HttpPost("GetAll")]
         public async Task<IActionResult> GetAll(GetAllRequest request, [FromServices] IValidator<GetAllRequest> validator,  CancellationToken cancellationToken)
         {
             var validationResult = await validator.ValidateAsync(request);

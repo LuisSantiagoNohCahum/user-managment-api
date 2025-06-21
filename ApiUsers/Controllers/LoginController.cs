@@ -11,13 +11,12 @@
         }
 
         [HttpPost]
-        [Route("Login")]
         public async Task<IActionResult> Login(LoginRequest request, [FromServices] IValidator<LoginRequest> validator, CancellationToken cancellationToken)
         {
             var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
             return validationResult.IsValid
-                ? Ok(await _loginService.LoginAsync(request, cancellationToken))
+                ? Ok(new { Token = await _loginService.LoginAsync(request, cancellationToken) })
                 : BadRequest(GetResponseFromWrongValidation(validationResult));
         }
 

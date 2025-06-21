@@ -8,6 +8,7 @@ namespace ApiUsers.Controllers
     public class RolesController : ControllerBase
     {
         private readonly IRolService _rolService;
+
         public RolesController(IRolService rolService)
         {
             _rolService = rolService;
