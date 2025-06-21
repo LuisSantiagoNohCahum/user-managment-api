@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using FromUriAttribute = System.Web.Http.FromUriAttribute;
 
 namespace ApiUsers.Controllers
 {
+    // TODO. Add the auth attribute here to apply to all endpoints
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -23,9 +25,10 @@ namespace ApiUsers.Controllers
                 : BadRequest(GetResponseFromWrongValidation(validationResult));
         }
 
+        // TODO. Query string parameters [FromQuery] for each parameter or [FromUri] to wrap the query in a object
         [Authorize]
-        [HttpPost("GetAll")]
-        public async Task<IActionResult> GetAll(GetAllRequest request, [FromServices] IValidator<GetAllRequest> validator,  CancellationToken cancellationToken)
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAll([FromUri] GetAllRequest request, [FromServices] IValidator<GetAllRequest> validator,  CancellationToken cancellationToken)
         {
             var validationResult = await validator.ValidateAsync(request);
 
@@ -62,6 +65,7 @@ namespace ApiUsers.Controllers
                 : BadRequest(GetResponseFromWrongValidation(validationResult));
         }
 
+        // TODO. Path parameters
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
