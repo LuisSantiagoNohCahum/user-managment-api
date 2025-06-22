@@ -45,11 +45,12 @@
         public async Task<UserDto?> GetAsync(int id, CancellationToken cancellationToken)
         { 
             var user = await _userRepository.GetAsync(id, cancellationToken);
+
             if (user is null) return default;
 
             var rol = await _rolRepository.GetAsync(user.RolId, cancellationToken);
-
             var response = user.ToDto();
+
             response.Rol = rol is null ? default : rol.ToDto();
             return response;
         }
@@ -134,22 +135,14 @@
 
             if (user is null) return 0;
 
-            var setUser = new User()
-            {
-                Id = user.Id,
-                Email = request.Email,
-                Password = user.Password,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                IsActive = request.IsActive,
-                RolId = request.RolId,
-                CreatedBy = user.CreatedBy,
-                CreatedOn = user.CreatedOn,
-                UpdatedBy = user.UpdatedBy,
-                UpdatedOn = user.UpdatedOn
-            };
+            user.Id = user.Id;
+            user.Email = request.Email;
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.IsActive = request.IsActive;
+            user.RolId = request.RolId;
 
-            return await _userRepository.UpdateAsync(setUser, cancellationToken);
+            return await _userRepository.UpdateAsync(user, cancellationToken);
         }
 
         public async Task<int> DeleteAsync(int id, CancellationToken cancellationToken)
@@ -157,9 +150,12 @@
             var user = await _userRepository.GetAsync(id, cancellationToken);
 
             if (user is not null)
-                return await _userRepository.DeleteAsync(user, cancellationToken);
+            {
+                if (user.Id == 1)
+                    throw new Exception("The default user cannot be deleted.");
 
-            // Validate if user is default not allowed delete action
+                return await _userRepository.DeleteAsync(user, cancellationToken);
+            } 
 
             return 0;
         }

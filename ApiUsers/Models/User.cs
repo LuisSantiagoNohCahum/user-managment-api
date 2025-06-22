@@ -5,6 +5,8 @@ namespace ApiUsers.Models
     public class User : Entity
     {
         // TODO. Add the rol relationship as a SQL relation.
+
+        // TODO. Add account table model.
         [MaxLength(200)]
         public string Email { get; set; }
 

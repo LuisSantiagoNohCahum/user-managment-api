@@ -40,7 +40,16 @@ namespace ApiUsers.Controllers
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(int id, CancellationToken cancellationToken)
-            => Ok(await _userService.GetAsync(id, cancellationToken));
+        {
+            var user = await _userService.GetAsync(id, cancellationToken);
+
+            if (user is null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return Ok(user);
+        }
 
         [Authorize]
         [HttpPost()]
