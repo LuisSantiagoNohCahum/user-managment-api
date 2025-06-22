@@ -17,6 +17,7 @@
         {
             var user = await _userRepository.GetAsync(u => !string.IsNullOrEmpty(u.Email) && u.Email.Equals(request.Email), cancellationToken);
 
+            // TODO. Use api exception and error handler/middleware or return bool
             if (user is null || !IsValidPassword(request, user))
                 throw new Exception("Email or password is wrong, try again.");
 

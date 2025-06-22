@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using FromUriAttribute = System.Web.Http.FromUriAttribute;
 
 namespace ApiUsers.Controllers
 {
@@ -15,6 +14,7 @@ namespace ApiUsers.Controllers
             _userService = userService;
         }
 
+        // TODO. Move to account controller
         [HttpPost("SignUp")]
         public async Task<IActionResult> SignUp(SignUpRequest request, [FromServices] IValidator<SignUpRequest> validator, CancellationToken cancellationToken)
         {
@@ -25,10 +25,10 @@ namespace ApiUsers.Controllers
                 : BadRequest(GetResponseFromWrongValidation(validationResult));
         }
 
-        // TODO. Query string parameters [FromQuery] for each parameter or [FromUri] to wrap the query in a object
+        // TODO. Query string parameters [FromQuery] for each parameter/binding model or [FromUri] to wrap the query in a object
         [Authorize]
-        [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAll([FromUri] GetAllRequest request, [FromServices] IValidator<GetAllRequest> validator,  CancellationToken cancellationToken)
+        [HttpGet()]
+        public async Task<IActionResult> GetAll([FromQuery] GetAllRequest request, [FromServices] IValidator<GetAllRequest> validator,  CancellationToken cancellationToken)
         {
             var validationResult = await validator.ValidateAsync(request);
 
@@ -42,9 +42,8 @@ namespace ApiUsers.Controllers
         public async Task<IActionResult> GetUser(int id, CancellationToken cancellationToken)
             => Ok(await _userService.GetAsync(id, cancellationToken));
 
-
         [Authorize]
-        [HttpPost("Insert")]
+        [HttpPost()]
         public async Task<IActionResult> Insert(InsertRequest request, [FromServices] IValidator<InsertRequest> validator, CancellationToken cancellationToken)
         {
             var validationResult = await validator.ValidateAsync(request);
@@ -54,14 +53,15 @@ namespace ApiUsers.Controllers
                 : BadRequest(GetResponseFromWrongValidation(validationResult));
         }
 
+        // Update/{id}
         [Authorize]
-        [HttpPost("Update")]
-        public async Task<IActionResult> Update(UpdateRequest request, IValidator<UpdateRequest> validator, CancellationToken cancellationToken)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, UpdateRequest request, IValidator<UpdateRequest> validator, CancellationToken cancellationToken)
         {
             var validationResult = await validator.ValidateAsync(request);
 
             return validationResult.IsValid
-                ? Ok(await _userService.UpdateAsync(request, cancellationToken))
+                ? Ok(await _userService.UpdateAsync(id, request, cancellationToken))
                 : BadRequest(GetResponseFromWrongValidation(validationResult));
         }
 
@@ -72,12 +72,13 @@ namespace ApiUsers.Controllers
              => Ok(await _userService.DeleteAsync(id, cancellationToken));
 
         [Authorize]
-        [HttpPost("BulkByExcelLayout")]
+        [HttpPost("ImportByExcel")]
         public async Task<IActionResult> BulkByExcelLayout(IFormFile layout, CancellationToken cancellationToken)
             => Ok(await _userService.ImportFromExcelAsync(layout, cancellationToken));
 
+        // TODO. Return a url for static file.
         [Authorize]
-        [HttpGet("Export")]
+        [HttpGet("ExportToExcel")]
         public async Task<IActionResult> ExportToExcel(CancellationToken cancellationToken)
             => Ok(await _userService.ExportToExcelAsync(cancellationToken));
 

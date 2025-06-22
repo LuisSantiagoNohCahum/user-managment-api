@@ -101,8 +101,8 @@
             if (request.CreatedOn > DateTime.MinValue)
                 BuildFilter("CreatedOn >= @{1}", request.CreatedOn);
 
-            if (string.IsNullOrEmpty(request.Status) && !request.Status.Equals("All", StringComparison.OrdinalIgnoreCase))
-                BuildFilter("IsActive == @{1}", request.Status.Equals("Active", StringComparison.OrdinalIgnoreCase));
+            if (string.IsNullOrEmpty(request.Status) && !string.IsNullOrEmpty(request.Status))
+                BuildFilter("IsActive == @{1}", request.Status.Equals("active", StringComparison.OrdinalIgnoreCase));
 
             void BuildFilter(string single_filter, object value)
             {
@@ -128,9 +128,9 @@
             return await _userRepository.InsertAsync(user, cancellationToken);
         }
 
-        public async Task<int> UpdateAsync(UpdateRequest request, CancellationToken cancellationToken)
+        public async Task<int> UpdateAsync(int id, UpdateRequest request, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetAsync(request.Id, cancellationToken);
+            var user = await _userRepository.GetAsync(id, cancellationToken);
 
             if (user is null) return 0;
 

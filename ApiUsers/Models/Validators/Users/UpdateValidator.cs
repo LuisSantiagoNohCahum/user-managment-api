@@ -4,8 +4,6 @@
     {
         public UpdateValidator()
         {
-            RuleFor(x => x.Id).GreaterThan(0);
-
             RuleFor(r => r.FirstName)
                 .NotEmpty().WithMessage("Need provide a fisrt name");
 
