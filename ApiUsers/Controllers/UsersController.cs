@@ -43,6 +43,7 @@ namespace ApiUsers.Controllers
         {
             var user = await _userService.GetAsync(id, cancellationToken);
 
+            // TODO. Use a api response.
             if (user is null)
             {
                 return NotFound("User not found.");

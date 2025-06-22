@@ -1,4 +1,9 @@
-﻿using Microsoft.Extensions.FileProviders;
+﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.FileProviders;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System.Net;
 
 namespace ApiUsers.Extensions
 {
@@ -46,6 +51,45 @@ namespace ApiUsers.Extensions
                 RequestPath = "/Private",
                 ServeUnknownFileTypes = true,
                 FileProvider = new PhysicalFileProvider(fullRootPath)
+            });
+
+            return app;
+        }
+
+        public static IApplicationBuilder UseErrorMidleware(this IApplicationBuilder app)
+        {
+            app.UseExceptionHandler(error =>
+            {
+                error.Run(async context =>
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    context.Response.ContentType = "application/json";
+
+                    var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+
+                    if (contextFeature != null)
+                    {
+                        var environment = context.RequestServices.CreateScope()
+                            .ServiceProvider
+                            .GetRequiredService<IHostEnvironment>();
+
+                        string message = "Internal server error";
+
+                        var response = new ApiResponse<string>()
+                        {
+                            Success = false,
+                            Data = environment.IsDevelopment() ? message : contextFeature.Error.Message,
+                            Errors = environment.IsDevelopment() ? [contextFeature.Error.StackTrace ] : []
+                        };
+
+                        var options = new JsonSerializerSettings() 
+                        { 
+                            ContractResolver = new CamelCasePropertyNamesContractResolver() 
+                        };
+
+                        await context.Response.WriteAsync(JsonConvert.SerializeObject(response, options));
+                    }
+                });
             });
 
             return app;

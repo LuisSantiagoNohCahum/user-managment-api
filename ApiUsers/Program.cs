@@ -5,6 +5,7 @@ builder.Services.AddBaseApiServices(builder.Configuration);
 var app = builder.Build();
 
 app.UseBaseConfigurations();
+app.UseErrorMidleware();
 
 // dotnet ef migrations add Initial -> to generate migration file
 // dotnet ef database update -> to apply changes in database structs
