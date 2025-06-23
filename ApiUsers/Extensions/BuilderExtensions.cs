@@ -1,4 +1,5 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using ApiUsers.Common;
+using Microsoft.OpenApi.Models;
 
 namespace ApiUsers.Extensions
 {
@@ -85,6 +86,16 @@ namespace ApiUsers.Extensions
             services.AddDbContext<AppDbContext>(e => e.UseSqlServer(configuration.GetConnectionString("MainConnectionString")));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRolRepository, RolRepository>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddFluentValidationFilter(this IServiceCollection services)
+        {
+            services.AddControllers(options =>
+            {
+                options.Filters.Add<ValidationFilter>();
+            });
 
             return services;
         }

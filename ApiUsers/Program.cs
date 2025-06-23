@@ -1,6 +1,7 @@
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddBaseApiServices(builder.Configuration);
+builder.Services.AddFluentValidationFilter();
 
 var app = builder.Build();
 
