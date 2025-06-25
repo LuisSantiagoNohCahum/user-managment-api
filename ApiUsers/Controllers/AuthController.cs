@@ -12,22 +12,13 @@
 
         [HttpPost]
         [Route("Login")]
-        public async Task<IActionResult> Login(LoginRequest request, [FromServices] IValidator<LoginRequest> validator, CancellationToken cancellationToken)
+        public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+            string token = await _loginService.LoginAsync(request, cancellationToken);
 
-            if (validationResult.IsValid)
-            {
-                return Ok(new
-                {
-                    Token = await _loginService.LoginAsync(request, cancellationToken)
-                });
-            }
+            var response = ApiResponse<object>.SuccessResponse(new { Token = token });
 
-            return BadRequest(GetResponseFromWrongValidation(validationResult));
+            return Ok(response);
         }
-
-        private ApiResponse<string> GetResponseFromWrongValidation(ValidationResult validationResult)
-            => ApiResponse<string>.FailResponse(validationResult.Errors.Select(e => e.ErrorMessage).ToArray());
     }
 }

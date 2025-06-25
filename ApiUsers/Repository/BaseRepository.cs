@@ -44,12 +44,14 @@
             return await _dbContext.Set<TEntity>().AnyAsync(filter, cancellationToken);
         }
 
+        // TODO. Return IEntity id and change the base model to take primary key type and return this on insert
         public async Task<int> InsertAsync(TEntity entity, CancellationToken cancellationToken)
         {
             entity.CreatedOn = DateTime.Now;
             entity.CreatedBy = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System";
             _dbContext.Set<TEntity>().Add(entity);
-            return await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return entity.Id;
         }
 
         public async Task<int> UpdateAsync(TEntity entity, CancellationToken cancellationToken)
@@ -57,7 +59,8 @@
             entity.UpdatedOn = DateTime.Now;
             entity.UpdatedBy = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknow";
             _dbContext.Entry(entity).State = EntityState.Modified;
-            return await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return entity.Id;
         }
 
         public async Task<int> DeleteAsync(TEntity entity, CancellationToken cancellationToken)

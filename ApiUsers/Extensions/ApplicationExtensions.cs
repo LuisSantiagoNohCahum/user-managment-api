@@ -48,7 +48,7 @@ namespace ApiUsers.Extensions
 
             app.UseStaticFiles(new StaticFileOptions()
             {
-                RequestPath = "/Private",
+                RequestPath = "/Public",
                 ServeUnknownFileTypes = true,
                 FileProvider = new PhysicalFileProvider(fullRootPath)
             });
@@ -73,14 +73,12 @@ namespace ApiUsers.Extensions
                             .ServiceProvider
                             .GetRequiredService<IHostEnvironment>();
 
-                        string message = "Internal server error";
+                        string message = environment.IsDevelopment() ? contextFeature.Error.Message : "Internal server error";
 
-                        var response = new ApiResponse<string>()
-                        {
-                            Success = false,
-                            Data = environment.IsDevelopment() ? message : contextFeature.Error.Message,
-                            Errors = environment.IsDevelopment() ? [contextFeature.Error.StackTrace ] : []
-                        };
+                        var response = contextFeature.Error is ApiException ex
+                            ? ApiResponse<string>.FailResponse(ex.DisplayMessage)
+                            : ApiResponse<string>.FailResponse(message, environment.IsDevelopment() ? [contextFeature.Error.StackTrace] : []);
+                            
 
                         var options = new JsonSerializerSettings() 
                         { 

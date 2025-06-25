@@ -4,6 +4,7 @@ using ApiUsers.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApiUsers.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class GeneralRepositoryContextModelSnapshot : ModelSnapshot
+    [Migration("20250624205112_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,18 +63,34 @@ namespace ApiUsers.Migrations
                         new
                         {
                             Id = 1,
-                            Code = "ADM",
+                            Code = "ADMIN",
                             CreatedBy = "System",
-                            CreatedOn = new DateTime(2025, 3, 26, 13, 24, 24, 712, DateTimeKind.Local).AddTicks(9876),
+                            CreatedOn = new DateTime(2025, 6, 24, 14, 51, 11, 825, DateTimeKind.Local).AddTicks(6823),
                             Name = "Administrator"
                         },
                         new
                         {
                             Id = 2,
-                            Code = "GST",
+                            Code = "GUEST",
                             CreatedBy = "System",
-                            CreatedOn = new DateTime(2025, 3, 26, 13, 24, 24, 712, DateTimeKind.Local).AddTicks(9880),
+                            CreatedOn = new DateTime(2025, 6, 24, 14, 51, 11, 825, DateTimeKind.Local).AddTicks(6835),
                             Name = "Guest"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "SYS_ADMIN",
+                            CreatedBy = "System",
+                            CreatedOn = new DateTime(2025, 6, 24, 14, 51, 11, 825, DateTimeKind.Local).AddTicks(6837),
+                            Name = "System Administrator"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Code = "INTERNAL",
+                            CreatedBy = "System",
+                            CreatedOn = new DateTime(2025, 6, 24, 14, 51, 11, 825, DateTimeKind.Local).AddTicks(6838),
+                            Name = "Internal"
                         });
                 });
 
@@ -128,13 +147,13 @@ namespace ApiUsers.Migrations
                         {
                             Id = 1,
                             CreatedBy = "System",
-                            CreatedOn = new DateTime(2025, 3, 26, 13, 24, 24, 712, DateTimeKind.Local).AddTicks(9057),
+                            CreatedOn = new DateTime(2025, 6, 24, 14, 51, 11, 828, DateTimeKind.Local).AddTicks(8797),
                             Email = "default@default.com",
                             FirstName = "Admin",
                             IsActive = true,
                             LastName = "Admin",
-                            Password = "kr5OT8FBqWDVdtDPDVGAhH5BVHOQBroAS970bDq7lZIcE6GD",
-                            RolId = 1
+                            Password = "RElBE0N/lV1NmUJNVbun3ZoQDtDHVIDIF5zsF32sjbykvHXS",
+                            RolId = 4
                         });
                 });
 #pragma warning restore 612, 618

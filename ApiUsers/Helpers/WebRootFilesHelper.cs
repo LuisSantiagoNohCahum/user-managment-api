@@ -17,7 +17,7 @@
 
         private string GetUploadsRootFolder() => Path.Combine(_webRootPath, "Uploads");
 
-        private string GetPrivateWebFolder() => _apiUrl.EndsWith("/") ? string.Format("{0}{1}", "Private") : string.Format("{0}/{1}", "Private");
+        private string GetPrivateWebFolder() => _apiUrl.EndsWith("/") ? string.Format("{0}{1}", _apiUrl, "Public") : string.Format("{0}/{1}", _apiUrl, "Public");
 
         public async Task<string> GetFileUrlAsync(string fileContent, string fileName, bool isBase64 = false, CancellationToken cancellationToken = default)
             => await GetFileUrlAsync(fileContent, fileName, GetUploadsRootFolder(), isBase64, cancellationToken);
@@ -38,7 +38,9 @@
         {
             string filePath = await SaveFileAsync(fileContent, fileName, directory, cancellationToken);
 
-            int indexRoot = filePath.LastIndexOf("wwwroot\\");
+            string rootFolder = "wwwroot\\";
+
+            int indexRoot = filePath.LastIndexOf(rootFolder) + rootFolder.Length;
 
             filePath = filePath.AsSpan(indexRoot).ToString().Replace("\\", "/");
 

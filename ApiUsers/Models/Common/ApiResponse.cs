@@ -3,19 +3,19 @@
     public class ApiResponse<T>
     {
         public bool Success { get; set; }
-        public IEnumerable<string>? Errors { get; set; }
-        public T? Data { get; set; }
+        public IEnumerable<string> Errors { get; set; }
+        public T Data { get; set; }
 
         public ApiResponse() { }
 
-        public ApiResponse(bool succes, T? data = default, string[]? errors = null)
+        public ApiResponse(bool succes, T data = default, string[] errors = null)
         {
             Success = succes;
             Data = data;
             Errors = errors;
         }
 
-        public static ApiResponse<T> SuccessResponse(T? data)
+        public static ApiResponse<T> SuccessResponse(T data)
             => new ApiResponse<T>()
             {
                 Success = true,
@@ -23,12 +23,12 @@
                 Data = data
             };
 
-        public static ApiResponse<T> FailResponse(params string[] errors)
-            => new ApiResponse<T>()
+        public static ApiResponse<string> FailResponse(string message, params string[] errors)
+            => new ApiResponse<string>()
             {
                 Success = false,
                 Errors = errors,
-                Data = default
+                Data = message
             };
     }
 }

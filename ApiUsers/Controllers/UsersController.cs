@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ApiUsers.Controllers
 {
-    // TODO. Add the auth attribute here to apply to all endpoints
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -14,27 +14,25 @@ namespace ApiUsers.Controllers
             _userService = userService;
         }
 
-        // TODO. Move to account controller
-        [HttpPost("SignUp")]
-        public async Task<IActionResult> SignUp(SignUpRequest request, [FromServices] IValidator<SignUpRequest> validator, CancellationToken cancellationToken)
+        [HttpPost("InsertGuest")]
+        public async Task<IActionResult> InsertGuest(SignUpRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await validator.ValidateAsync(request);
+            bool inserted = await _userService.InsertGuestAsync(request, cancellationToken);
 
-            return validationResult.IsValid
-                ? Ok(await _userService.SignUpAsync(request, cancellationToken))
-                : BadRequest(GetResponseFromWrongValidation(validationResult));
+            var response = ApiResponse<string>.SuccessResponse("Usuario creado correctamente");
+
+            return Ok(response);
         }
 
-        // TODO. Query string parameters [FromQuery] for each parameter/binding model or [FromUri] to wrap the query in a object
         [Authorize]
         [HttpGet()]
-        public async Task<IActionResult> GetAll([FromQuery] GetAllRequest request, [FromServices] IValidator<GetAllRequest> validator,  CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll([FromQuery] GetAllRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await validator.ValidateAsync(request);
+            var users = await _userService.GetAllAsync(request, cancellationToken);
 
-            return validationResult.IsValid
-                ? Ok(await _userService.GetAllAsync(request, cancellationToken))
-                : BadRequest(GetResponseFromWrongValidation(validationResult));
+            var response = ApiResponse<IEnumerable<UserDto>>.SuccessResponse(users);
+
+            return Ok(response);   
         }
 
         [Authorize]
@@ -42,57 +40,68 @@ namespace ApiUsers.Controllers
         public async Task<IActionResult> GetUser(int id, CancellationToken cancellationToken)
         {
             var user = await _userService.GetAsync(id, cancellationToken);
+            
+            var response = ApiResponse<UserDto>.SuccessResponse(user);
 
-            // TODO. Use a api response.
-            if (user is null)
-            {
-                return NotFound("User not found.");
-            }
-
-            return Ok(user);
+            return Ok(response);
         }
 
         [Authorize]
         [HttpPost()]
-        public async Task<IActionResult> Insert(InsertRequest request, [FromServices] IValidator<InsertRequest> validator, CancellationToken cancellationToken)
+        public async Task<IActionResult> Insert(InsertRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await validator.ValidateAsync(request);
+            var insertedId = await _userService.InsertAsync(request, cancellationToken);
 
-            return validationResult.IsValid
-                ? Ok(await _userService.InsertAsync(request, cancellationToken))
-                : BadRequest(GetResponseFromWrongValidation(validationResult));
+            var response = ApiResponse<int>.SuccessResponse(insertedId);
+
+            return Ok(response);
         }
 
-        // Update/{id}
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, UpdateRequest request, IValidator<UpdateRequest> validator, CancellationToken cancellationToken)
+        public async Task<IActionResult> Update(int id, UpdateRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await validator.ValidateAsync(request);
+            var updated = await _userService.UpdateAsync(id, request, cancellationToken);
 
-            return validationResult.IsValid
-                ? Ok(await _userService.UpdateAsync(id, request, cancellationToken))
-                : BadRequest(GetResponseFromWrongValidation(validationResult));
+            var response = ApiResponse<int>.SuccessResponse(updated);
+
+            return Ok(response);
         }
 
-        // TODO. Path parameters
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-             => Ok(await _userService.DeleteAsync(id, cancellationToken));
+        {
+            int deleted = await _userService.DeleteAsync(id, cancellationToken);
+
+            var response = ApiResponse<int>.SuccessResponse(deleted);
+
+            return  Ok(response);
+        }
 
         [Authorize]
-        [HttpPost("ImportByExcel")]
-        public async Task<IActionResult> BulkByExcelLayout(IFormFile layout, CancellationToken cancellationToken)
-            => Ok(await _userService.ImportFromExcelAsync(layout, cancellationToken));
+        [HttpPost("ImportFromFile")]
+        public async Task<IActionResult> ImportFromFile([FromForm] ImportFromFileRequest request, CancellationToken cancellationToken)
+        {
+            var count = await _userService.ImportFromFileAsync(request, cancellationToken);
 
-        // TODO. Return a url for static file.
+            var response = ApiResponse<string>.SuccessResponse($"Se importaron {count} usuarios.");
+
+            return Ok(response);
+        }
+         
+
+
         [Authorize]
         [HttpGet("ExportToExcel")]
-        public async Task<IActionResult> ExportToExcel(CancellationToken cancellationToken)
-            => Ok(await _userService.ExportToExcelAsync(cancellationToken));
+        public async Task<IActionResult> ExportToExcel([FromQuery] GetAllRequest request, CancellationToken cancellationToken)
+        {
+            var fileUrl = await _userService.ExportToExcelAsync(request, cancellationToken);
 
-        private ApiResponse<string> GetResponseFromWrongValidation(ValidationResult validationResult)
-            => ApiResponse<string>.FailResponse(validationResult.Errors.Select(e => e.ErrorMessage).ToArray());
+            var response = ApiResponse<string>.SuccessResponse(fileUrl);
+
+            return Ok(response);
+        }
+        
     }
 }

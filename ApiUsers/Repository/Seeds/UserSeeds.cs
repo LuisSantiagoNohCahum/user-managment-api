@@ -19,7 +19,7 @@
                     FirstName = "Admin", 
                     LastName = "Admin", 
                     IsActive = true, 
-                    RolId = 1, 
+                    RolId = 4, 
                     CreatedBy = "System", 
                     CreatedOn = DateTime.Now 
                 });

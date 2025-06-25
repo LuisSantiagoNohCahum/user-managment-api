@@ -1,6 +1,8 @@
 ﻿using MiniExcelLibs;
 using MiniExcelLibs.Attributes;
 using MiniExcelLibs.OpenXml;
+using System.Dynamic;
+using System.Reflection;
 
 namespace ApiUsers.Helpers
 {
@@ -12,55 +14,57 @@ namespace ApiUsers.Helpers
             _tempPath = Path.Combine(webHostEnvironment.WebRootPath, "Temp");
         }
 
-        public async Task<byte[]> CreateWorkBookAsync<TRow>(IEnumerable<TRow> rows, string sheetName = "Export", OpenXmlConfiguration? exportConfiguration = null, string[]? ignoreColumns = null, bool takeDefaultValues = true, CancellationToken cancellationToken = default) where TRow : class
+        public async Task<string> CreateWorkBookAsync<TRow>(IEnumerable<TRow> rows, string sheetName = "Export", OpenXmlConfiguration? exportConfiguration = null, string[] ignoreColumns = null, bool takeDefaultValues = true, CancellationToken cancellationToken = default) where TRow : class
         {
             exportConfiguration ??= new OpenXmlConfiguration()
             {
                 EnableWriteNullValueCell = takeDefaultValues,
-                TableStyles = TableStyles.None,
+                TableStyles = TableStyles.Default,
                 DynamicColumnFirst = true,
+                FastMode = true,
+                EnableAutoWidth = true,
                 DynamicColumns = GetDynamicColumnsSetup<TRow>(ignoreColumns)
             };
 
-            if (Directory.Exists(_tempPath)) Directory.CreateDirectory(_tempPath);
+            if (!Directory.Exists(_tempPath))
+            { 
+                Directory.CreateDirectory(_tempPath); 
+            }
 
             string fullTempFilePath = Path.Combine(_tempPath, $"{Guid.NewGuid()}.xlsx");
 
             await MiniExcel.SaveAsAsync(fullTempFilePath, rows, true, sheetName, configuration: exportConfiguration, cancellationToken: cancellationToken);
 
-            var fileData = await File.ReadAllBytesAsync(fullTempFilePath, cancellationToken);
-
-            try { File.Delete(fullTempFilePath); } catch {}
-            
-            return fileData;
+            return fullTempFilePath;
         }
 
-        private DynamicExcelColumn[] GetDynamicColumnsSetup<TRow>(string[]? ignoreColumns)
+        private DynamicExcelColumn[] GetDynamicColumnsSetup<TRow>(string[] ignoreColumns)
         {
             var columns = typeof(TRow).GetProperties();
 
             List<DynamicExcelColumn> dynamicColumns = new List<DynamicExcelColumn>();
 
             int index = 0;
+
             foreach (var column in columns)
             {
                 DynamicExcelColumn dynamicColumn;
 
+                // TODO. Allow send custom display name in a dictionary
                 if (ignoreColumns is not null && ignoreColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    //Key -> to match propertie name, Name -> Column name to display
                     dynamicColumn = new DynamicExcelColumn(column.Name)
                     {
-                        Name = column.Name.ToUpper(),
+                        Name = column.Name.Replace("_", " ").ToUpper(),
                         Ignore = true,
-                        Width = 0
+                        Width = 0,
                     };
                 }
                 else
                 {
                     dynamicColumn = new DynamicExcelColumn(column.Name)
                     {
-                        Name = column.Name.ToUpper(),
+                        Name = column.Name.Replace("_", " ").ToUpper(),
                         Index = index,
                         Ignore = false
                     };
@@ -74,65 +78,124 @@ namespace ApiUsers.Helpers
             return dynamicColumns.ToArray();
         }
 
-        public async Task<IEnumerable<TRow>> ReadWorkSheetAsync<TRow>(string filePath, string sheetName = "Import_Layout", bool isExpendedModelType = false, CancellationToken cancellationToken = default) where TRow : class, new()
+        public async Task<IEnumerable<TRow>> ReadWorkSheetAsync<TRow>(string filePath,  ExcelType excelType, 
+            MiniExcelLibs.IConfiguration configuration = default, 
+            string sheetName = "Import_Layout", 
+            bool useDefaultParser = false, 
+            CancellationToken cancellationToken = default) where TRow : class, new()
         {
             filePath.Guard(nameof(filePath));
 
-            if (!IsValidFile(filePath))
-                throw new Exception($"Invalid excel file.");
+            using (var excelStream = File.OpenRead(filePath))
+            {
+                if (useDefaultParser)
+                {
+                    return await excelStream.QueryAsync<TRow>(
+                        sheetName: sheetName, 
+                        excelType: excelType, 
+                        configuration: configuration, 
+                        cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    var rows = await excelStream.QueryAsync(
+                        useHeaderRow: true, 
+                        sheetName: sheetName, 
+                        excelType: excelType, 
+                        configuration: configuration, 
+                        cancellationToken: cancellationToken);
 
-            var result = new List<TRow>();
+                    if (rows is null || !rows.Any())
+                    {
+                        return Enumerable.Empty<TRow>();
+                    }
 
-            var targetProps = typeof(TRow).GetProperties();
+                    var targetProps = typeof(TRow).GetProperties().ToList();
+
+                    return rows.Select(row =>
+                    {
+                        var instance = Activator.CreateInstance<TRow>();
+
+                        targetProps.ForEach(tp =>
+                        {
+                            var matchedProp = (row as object).GetType()
+                                .GetProperties()
+                                .Where(p => p.Name.Equals(tp.Name, StringComparison.OrdinalIgnoreCase))
+                                .FirstOrDefault();
+
+                            if (matchedProp is null) return;
+
+                            object value = matchedProp.GetValue(row);
+
+                            if (value is null) return;
+
+                            tp.SetValue(instance, ParseValue(value, tp.PropertyType));
+                        });
+
+                        return instance;
+                    });
+                }
+            }
+        }
+
+        public async Task<IEnumerable<TRow>> ReadWorkSheetAsync<TRow>(string filePath, ExcelType excelType,
+            Dictionary<string, string> columns = null,
+            MiniExcelLibs.IConfiguration configuration = default,
+            string sheetName = "Import_Layout",
+            CancellationToken cancellationToken = default) where TRow : class
+        {
+            filePath.Guard(nameof(filePath));
 
             using (var excelStream = File.OpenRead(filePath))
             {
-                if (!isExpendedModelType)
-                    return await excelStream.QueryAsync<TRow>(sheetName: sheetName, cancellationToken: cancellationToken);
+                var rows = await excelStream.QueryAsync(
+                    useHeaderRow: true,
+                    sheetName: sheetName,
+                    excelType: excelType,
+                    configuration: configuration,
+                    cancellationToken: cancellationToken);
 
-                var rows = await excelStream.QueryAsync(useHeaderRow: true, sheetName: sheetName, cancellationToken: cancellationToken);
+                if (rows is null || !rows.Any())
+                {
+                    return Enumerable.Empty<TRow>();
+                }
 
-                if (rows is null || !rows.Any()) 
-                    return result;
-                
+                if (typeof(TRow) == typeof(object) || (typeof(IDynamicMetaObjectProvider)).IsAssignableFrom(typeof(TRow)))
+                {
+                    return rows.Select(row => (TRow)row);
+                }
+
+                var targetProperties = typeof(TRow).GetProperties().ToList();
+
+                var parsedRows = new List<TRow>();
+
                 foreach (var row in rows)
                 {
                     var instance = Activator.CreateInstance<TRow>();
-                    object parsedRow = row as object;
 
-                    foreach (var targetProp in targetProps)
+                    var expando = (row as IDictionary<string, object>);
+
+                    foreach(var tp in targetProperties)
                     {
-                        var matchedProp = parsedRow
-                            .GetType()
-                            .GetProperties()
-                            .Where(p => p.Name.Equals(targetProp.Name, StringComparison.OrdinalIgnoreCase))
-                            .FirstOrDefault();
+                        string fieldName = columns is not null && columns.Any() && columns.TryGetValue(tp.Name, out string field) ? field : tp.Name;
 
-                        if (matchedProp is null) continue;
-
-                        object? value = matchedProp.GetValue(parsedRow);
-                        if (value is null) continue;
-
-                        targetProp.SetValue(instance, ParseValue(value, targetProp.PropertyType));
+                        if (expando.TryGetValue(fieldName, out var value) && value is not null)
+                        {
+                            tp.SetValue(instance, ParseValue(value, tp.PropertyType));
+                        }
                     }
-                    result.Add(instance);
+
+                    parsedRows.Add(instance);
                 }
+
+                return parsedRows;
             }
-            return result;
         }
 
-        private bool IsValidFile(string filePath)
-            => File.Exists(filePath)
-            && (filePath.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) 
-            || filePath.EndsWith(".xls", StringComparison.OrdinalIgnoreCase));
-
-        private object? ParseValue(object value, Type targetType)
-        {
-            TypeCode typeCode = Type.GetTypeCode(targetType);
-
-            return typeCode switch
+        private object ParseValue(object value, Type targetType)
+            => Type.GetTypeCode(targetType) switch
             {
-                TypeCode.Boolean => Convert.ToBoolean(value),
+                TypeCode.Boolean => Convert.ToBoolean(int.TryParse(value.ToString(), out var result) ? result : value),
                 TypeCode.Char => Convert.ToChar(value),
                 TypeCode.Int16 => Convert.ToInt16(value),
                 TypeCode.UInt16 => Convert.ToUInt16(value),
@@ -147,6 +210,5 @@ namespace ApiUsers.Helpers
                 TypeCode.String => Convert.ToString(value),
                 _ => throw new Exception("Not supported type.")
             };
-        }
     }
 }

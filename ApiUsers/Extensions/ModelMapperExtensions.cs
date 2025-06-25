@@ -2,7 +2,7 @@
 {
     public static class ModelMapperExtensions
     {
-        public static UserDto ToDto(this User user)
+        public static UserDto ToDto(this User user, RolDto rol = default)
         =>  new UserDto()
             {
                 Id = user.Id,
@@ -12,7 +12,7 @@
                 IsActive = user.IsActive,
                 CreatedOn = user.CreatedOn,
                 UpdatedOn = user.UpdatedOn,
-                Rol = default
+                Rol = rol
             };
         
         public static RolDto ToDto(this Rol rol)
