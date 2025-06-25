@@ -40,7 +40,11 @@ namespace ApiUsers.Helpers
 
         private DynamicExcelColumn[] GetDynamicColumnsSetup<TRow>(string[] ignoreColumns)
         {
-            var columns = typeof(TRow).GetProperties();
+            var columns = typeof(TRow).GetProperties().Select(p => new 
+            { 
+                Key = p.Name,
+                Caption = p.Name.Replace("_", " ").ToUpper(),
+            });
 
             List<DynamicExcelColumn> dynamicColumns = new List<DynamicExcelColumn>();
 
@@ -50,21 +54,22 @@ namespace ApiUsers.Helpers
             {
                 DynamicExcelColumn dynamicColumn;
 
-                // TODO. Allow send custom display name in a dictionary
-                if (ignoreColumns is not null && ignoreColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase))
+                // TODO. Allow send custom display name in a dictionary as on read and delete the ignore columns
+                // (if you need skip columns send only the need data on anonymus object or send the required columns)
+                if (ignoreColumns is not null && ignoreColumns.Contains(column.Key, StringComparer.OrdinalIgnoreCase))
                 {
-                    dynamicColumn = new DynamicExcelColumn(column.Name)
+                    dynamicColumn = new DynamicExcelColumn(column.Key)
                     {
-                        Name = column.Name.Replace("_", " ").ToUpper(),
+                        Name = column.Caption,
                         Ignore = true,
                         Width = 0,
                     };
                 }
                 else
                 {
-                    dynamicColumn = new DynamicExcelColumn(column.Name)
+                    dynamicColumn = new DynamicExcelColumn(column.Key)
                     {
-                        Name = column.Name.Replace("_", " ").ToUpper(),
+                        Name = column.Caption,
                         Index = index,
                         Ignore = false
                     };
@@ -81,67 +86,24 @@ namespace ApiUsers.Helpers
         public async Task<IEnumerable<TRow>> ReadWorkSheetAsync<TRow>(string filePath,  ExcelType excelType, 
             MiniExcelLibs.IConfiguration configuration = default, 
             string sheetName = "Import_Layout", 
-            bool useDefaultParser = false, 
             CancellationToken cancellationToken = default) where TRow : class, new()
         {
             filePath.Guard(nameof(filePath));
 
             using (var excelStream = File.OpenRead(filePath))
             {
-                if (useDefaultParser)
-                {
-                    return await excelStream.QueryAsync<TRow>(
-                        sheetName: sheetName, 
-                        excelType: excelType, 
-                        configuration: configuration, 
-                        cancellationToken: cancellationToken);
-                }
-                else
-                {
-                    var rows = await excelStream.QueryAsync(
-                        useHeaderRow: true, 
-                        sheetName: sheetName, 
-                        excelType: excelType, 
-                        configuration: configuration, 
-                        cancellationToken: cancellationToken);
-
-                    if (rows is null || !rows.Any())
-                    {
-                        return Enumerable.Empty<TRow>();
-                    }
-
-                    var targetProps = typeof(TRow).GetProperties().ToList();
-
-                    return rows.Select(row =>
-                    {
-                        var instance = Activator.CreateInstance<TRow>();
-
-                        targetProps.ForEach(tp =>
-                        {
-                            var matchedProp = (row as object).GetType()
-                                .GetProperties()
-                                .Where(p => p.Name.Equals(tp.Name, StringComparison.OrdinalIgnoreCase))
-                                .FirstOrDefault();
-
-                            if (matchedProp is null) return;
-
-                            object value = matchedProp.GetValue(row);
-
-                            if (value is null) return;
-
-                            tp.SetValue(instance, ParseValue(value, tp.PropertyType));
-                        });
-
-                        return instance;
-                    });
-                }
+                return await excelStream.QueryAsync<TRow>(
+                    sheetName: sheetName, 
+                    excelType: excelType, 
+                    configuration: configuration, 
+                    cancellationToken: cancellationToken);
             }
         }
 
         public async Task<IEnumerable<TRow>> ReadWorkSheetAsync<TRow>(string filePath, ExcelType excelType,
             Dictionary<string, string> columns = null,
             MiniExcelLibs.IConfiguration configuration = default,
-            string sheetName = "Import_Layout",
+            string sheetName = "ImportLayout",
             CancellationToken cancellationToken = default) where TRow : class
         {
             filePath.Guard(nameof(filePath));

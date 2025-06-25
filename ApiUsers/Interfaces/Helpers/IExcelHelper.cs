@@ -14,6 +14,11 @@ namespace ApiUsers.Interfaces.Helpers
             CancellationToken cancellationToken = default) where TRow : class;
 
         Task<IEnumerable<TRow>> ReadWorkSheetAsync<TRow>(string filePath, ExcelType excelType,
+            MiniExcelLibs.IConfiguration configuration = default,
+            string sheetName = "Import_Layout",
+            CancellationToken cancellationToken = default) where TRow : class, new();
+
+        Task<IEnumerable<TRow>> ReadWorkSheetAsync<TRow>(string filePath, ExcelType excelType,
             Dictionary<string, string> columns = null,
             MiniExcelLibs.IConfiguration configuration = default,
             string sheetName = "Import_Layout",
